@@ -71,6 +71,18 @@ Standard split: train = S1,5,6,7,8 ; test = S9,S11. MPJPE is real millimetres.
 
 ---
 
+## 2b. Smoke test (run FIRST — ~30s, no dataset needed)
+
+Verifies each config builds, stays < 1M params, runs a forward + backward with a
+finite decreasing loss, that augmentation works, and that the new occlusion
+features are active. Gate every long run behind it:
+
+```bash
+PYTHONPATH=$PWD python smoke_test.py                       # all 3 configs
+PYTHONPATH=$PWD python smoke_test.py && echo "ready to train"
+```
+Exits non-zero on any failure, so `python smoke_test.py && python train.py ...` is safe.
+
 ## 3. Reproduce & improve — command sequence
 
 All commands run from the repo root with `PYTHONPATH=$PWD`. Each is one GPU job
