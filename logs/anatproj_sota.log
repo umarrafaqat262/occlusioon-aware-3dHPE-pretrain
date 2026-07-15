@@ -1,0 +1,90 @@
+22:03:58  ============================================================
+22:03:58    AnatomyProj-Mamba_CPN_SOTA  |  cuda  |  tag=anatproj_sota
+22:04:01    train batches 554  val batches 74
+22:04:01    Parameters: 968,092  (0.968M)
+22:04:01  ============================================================
+22:04:01  Loaded pretrained | missing=0 unexpected=0
+22:11:27  Epoch   1/120  loss=0.2168  lr=0.000100
+22:18:54  Epoch   2/120  loss=0.1247  lr=0.000200
+22:26:22  Epoch   3/120  loss=0.1031  lr=0.000300
+22:33:49  Epoch   4/120  loss=0.0930  lr=0.000400
+22:41:17  Epoch   5/120  loss=0.0867  lr=0.000500
+22:41:33    VAL (EMA)  MPJPE = 80.91 mm   (best inf)
+22:41:34    NEW BEST -> checkpoints/best_anatproj_sota.pth
+22:49:43  Epoch   6/120  loss=0.0812  lr=0.000500
+22:57:11  Epoch   7/120  loss=0.0767  lr=0.000500
+23:04:38  Epoch   8/120  loss=0.0733  lr=0.000500
+23:12:05  Epoch   9/120  loss=0.0709  lr=0.000499
+23:19:32  Epoch  10/120  loss=0.0687  lr=0.000499
+23:19:49    VAL (EMA)  MPJPE = 55.96 mm   (best 80.91)
+23:19:49    NEW BEST -> checkpoints/best_anatproj_sota.pth
+23:27:16  Epoch  11/120  loss=0.0669  lr=0.000498
+23:34:44  Epoch  12/120  loss=0.0655  lr=0.000497
+23:42:11  Epoch  13/120  loss=0.0642  lr=0.000495
+23:49:38  Epoch  14/120  loss=0.0630  lr=0.000494
+23:57:06  Epoch  15/120  loss=0.0617  lr=0.000493
+23:57:22    VAL (EMA)  MPJPE = 52.89 mm   (best 55.96)
+23:57:22    NEW BEST -> checkpoints/best_anatproj_sota.pth
+00:04:50  Epoch  16/120  loss=0.0610  lr=0.000491
+00:12:17  Epoch  17/120  loss=0.0601  lr=0.000489
+00:19:44  Epoch  18/120  loss=0.0593  lr=0.000487
+00:27:11  Epoch  19/120  loss=0.0586  lr=0.000485
+00:34:39  Epoch  20/120  loss=0.0578  lr=0.000482
+00:34:55    VAL (EMA)  MPJPE = 51.91 mm   (best 52.89)
+00:34:55    NEW BEST -> checkpoints/best_anatproj_sota.pth
+00:42:23  Epoch  21/120  loss=0.0573  lr=0.000480
+00:49:50  Epoch  22/120  loss=0.0565  lr=0.000477
+00:57:17  Epoch  23/120  loss=0.0561  lr=0.000474
+01:04:44  Epoch  24/120  loss=0.0556  lr=0.000471
+01:12:12  Epoch  25/120  loss=0.0551  lr=0.000467
+01:12:28    VAL (EMA)  MPJPE = 51.32 mm   (best 51.91)
+01:12:28    NEW BEST -> checkpoints/best_anatproj_sota.pth
+01:19:56  Epoch  26/120  loss=0.0545  lr=0.000464
+01:27:23  Epoch  27/120  loss=0.0544  lr=0.000460
+01:34:50  Epoch  28/120  loss=0.0538  lr=0.000457
+01:42:17  Epoch  29/120  loss=0.0533  lr=0.000453
+01:49:45  Epoch  30/120  loss=0.0529  lr=0.000449
+01:50:01    VAL (EMA)  MPJPE = 50.85 mm   (best 51.32)
+01:50:01    NEW BEST -> checkpoints/best_anatproj_sota.pth
+01:57:29  Epoch  31/120  loss=0.0525  lr=0.000444
+02:04:56  Epoch  32/120  loss=0.0521  lr=0.000440
+02:12:23  Epoch  33/120  loss=0.0517  lr=0.000436
+02:19:51  Epoch  34/120  loss=0.0514  lr=0.000431
+02:27:18  Epoch  35/120  loss=0.0511  lr=0.000426
+02:27:34    VAL (EMA)  MPJPE = 50.14 mm   (best 50.85)
+02:27:35    NEW BEST -> checkpoints/best_anatproj_sota.pth
+02:35:02  Epoch  36/120  loss=0.0508  lr=0.000421
+02:42:29  Epoch  37/120  loss=0.0504  lr=0.000416
+02:49:56  Epoch  38/120  loss=0.0500  lr=0.000411
+02:57:23  Epoch  39/120  loss=0.0498  lr=0.000406
+03:04:51  Epoch  40/120  loss=0.0495  lr=0.000401
+03:05:07    VAL (EMA)  MPJPE = 49.71 mm   (best 50.14)
+03:05:07    NEW BEST -> checkpoints/best_anatproj_sota.pth
+03:12:35  Epoch  41/120  loss=0.0492  lr=0.000395
+03:20:02  Epoch  42/120  loss=0.0489  lr=0.000390
+03:27:29  Epoch  43/120  loss=0.0487  lr=0.000384
+03:34:56  Epoch  44/120  loss=0.0484  lr=0.000378
+03:43:06  Epoch  45/120  loss=0.0482  lr=0.000372
+03:43:23    VAL (EMA)  MPJPE = 49.57 mm   (best 49.71)
+03:43:23    NEW BEST -> checkpoints/best_anatproj_sota.pth
+03:50:51  Epoch  46/120  loss=0.0479  lr=0.000366
+03:58:18  Epoch  47/120  loss=0.0477  lr=0.000360
+04:05:45  Epoch  48/120  loss=0.0563  lr=0.000354
+04:13:13  Epoch  49/120  loss=0.0549  lr=0.000348
+04:20:40  Epoch  50/120  loss=0.0542  lr=0.000342
+04:20:57    VAL (EMA)  MPJPE = 50.27 mm   (best 49.57)
+04:28:24  Epoch  51/120  loss=0.0537  lr=0.000335
+04:35:52  Epoch  52/120  loss=0.0531  lr=0.000329
+04:43:19  Epoch  53/120  loss=0.0527  lr=0.000323
+04:50:47  Epoch  54/120  loss=0.0524  lr=0.000316
+04:58:14  Epoch  55/120  loss=0.0521  lr=0.000309
+04:58:31    VAL (EMA)  MPJPE = 50.61 mm   (best 49.57)
+05:06:41  Epoch  56/120  loss=0.0519  lr=0.000303
+05:16:33  Epoch  57/120  loss=0.0517  lr=0.000296
+05:24:01  Epoch  58/120  loss=0.0513  lr=0.000290
+05:31:28  Epoch  59/120  loss=0.0511  lr=0.000283
+05:38:56  Epoch  60/120  loss=0.0508  lr=0.000276
+05:39:12    VAL (EMA)  MPJPE = 50.45 mm   (best 49.57)
+05:46:40  Epoch  61/120  loss=0.0506  lr=0.000269
+05:54:08  Epoch  62/120  loss=0.0503  lr=0.000263
+06:01:35  Epoch  63/120  loss=0.0502  lr=0.000256

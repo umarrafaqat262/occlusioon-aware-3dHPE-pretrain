@@ -1,0 +1,119 @@
+14:38:00  ============================================================
+14:38:00    KinFK-Mamba_CPN_Tiny_SOTA  |  cuda  |  tag=kinfk_cpn_sota
+14:38:03    train batches 554  val batches 74
+14:38:04    Parameters: 445,571  (0.446M)
+14:38:04  ============================================================
+14:38:04  Loaded pretrained | missing=0 unexpected=0
+14:41:43  Epoch   1/100  loss=0.7100  lr=0.000100
+14:43:53  ============================================================
+14:43:53    KinFK-Mamba_CPN_Tiny_SOTA  |  cuda  |  tag=kinfk_cpn_sota
+14:43:57    train batches 277  val batches 37
+14:43:57    Parameters: 445,571  (0.446M)
+14:43:57  ============================================================
+14:43:57  Loaded pretrained | missing=0 unexpected=0
+14:45:21  ============================================================
+14:45:21    KinFK-Mamba_CPN_Tiny_SOTA  |  cuda  |  tag=kinfk_cpn_sota
+14:45:24    train batches 277  val batches 37
+14:45:25    Parameters: 445,571  (0.446M)
+14:45:25  ============================================================
+14:45:25  Loaded pretrained | missing=0 unexpected=0
+14:49:03  Epoch   1/80  loss=0.9040  lr=0.000100
+14:49:40  ============================================================
+14:49:40    KinFK-Mamba_CPN_Tiny_SOTA  |  cuda  |  tag=kinfk_cpn_sota
+14:49:43    train batches 554  val batches 74
+14:49:44    Parameters: 445,571  (0.446M)
+14:49:44  ============================================================
+14:49:44  Loaded pretrained | missing=0 unexpected=0
+14:52:13  ============================================================
+14:52:13    KinFK-Mamba_CPN_Tiny_SOTA  |  cuda  |  tag=kinfk_cpn_sota
+14:52:17    train batches 554  val batches 74
+14:52:17    Parameters: 445,571  (0.446M)
+14:52:17  ============================================================
+14:52:17  Loaded pretrained | missing=0 unexpected=0
+14:55:58  Epoch   1/100  loss=0.7098  lr=0.000100
+14:59:38  Epoch   2/100  loss=0.3388  lr=0.000200
+15:03:19  Epoch   3/100  loss=0.2838  lr=0.000300
+15:06:59  Epoch   4/100  loss=0.2623  lr=0.000400
+15:10:40  Epoch   5/100  loss=0.2504  lr=0.000500
+15:10:48    VAL (EMA)  MPJPE = 183.02 mm   (best inf)
+15:10:48    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+15:14:28  Epoch   6/100  loss=0.2417  lr=0.000500
+15:18:09  Epoch   7/100  loss=0.2118  lr=0.000495
+15:21:49  Epoch   8/100  loss=0.1925  lr=0.000490
+15:25:30  Epoch   9/100  loss=0.1818  lr=0.000485
+15:29:10  Epoch  10/100  loss=0.1745  lr=0.000480
+15:29:18    VAL (EMA)  MPJPE = 98.20 mm   (best 183.02)
+15:29:18    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+15:32:59  Epoch  11/100  loss=0.1679  lr=0.000475
+15:36:39  Epoch  12/100  loss=0.1616  lr=0.000471
+15:40:20  Epoch  13/100  loss=0.1556  lr=0.000466
+15:44:22  Epoch  14/100  loss=0.1510  lr=0.000461
+15:48:02  Epoch  15/100  loss=0.1462  lr=0.000457
+15:48:10    VAL (EMA)  MPJPE = 67.26 mm   (best 98.20)
+15:48:10    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+15:51:51  Epoch  16/100  loss=0.1439  lr=0.000452
+15:55:31  Epoch  17/100  loss=0.1414  lr=0.000448
+15:59:12  Epoch  18/100  loss=0.1390  lr=0.000443
+16:02:52  Epoch  19/100  loss=0.1373  lr=0.000439
+16:06:32  Epoch  20/100  loss=0.1353  lr=0.000434
+16:06:41    VAL (EMA)  MPJPE = 61.42 mm   (best 67.26)
+16:06:41    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+16:10:42  Epoch  21/100  loss=0.1343  lr=0.000430
+16:14:22  Epoch  22/100  loss=0.1325  lr=0.000426
+16:18:03  Epoch  23/100  loss=0.1319  lr=0.000421
+16:21:43  Epoch  24/100  loss=0.1304  lr=0.000417
+16:25:23  Epoch  25/100  loss=0.1296  lr=0.000413
+16:25:32    VAL (EMA)  MPJPE = 59.22 mm   (best 61.42)
+16:25:32    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+16:29:12  Epoch  26/100  loss=0.1289  lr=0.000409
+16:32:53  Epoch  27/100  loss=0.1278  lr=0.000405
+16:36:33  Epoch  28/100  loss=0.1270  lr=0.000401
+16:40:13  Epoch  29/100  loss=0.1265  lr=0.000397
+16:43:54  Epoch  30/100  loss=0.1257  lr=0.000393
+16:44:02    VAL (EMA)  MPJPE = 57.94 mm   (best 59.22)
+16:44:02    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+16:48:03  Epoch  31/100  loss=0.1249  lr=0.000389
+16:51:43  Epoch  32/100  loss=0.1245  lr=0.000385
+16:55:24  Epoch  33/100  loss=0.1239  lr=0.000381
+16:59:04  Epoch  34/100  loss=0.1235  lr=0.000377
+17:02:45  Epoch  35/100  loss=0.1227  lr=0.000374
+17:02:53    VAL (EMA)  MPJPE = 56.96 mm   (best 57.94)
+17:02:53    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+17:06:33  Epoch  36/100  loss=0.1223  lr=0.000370
+17:10:14  Epoch  37/100  loss=0.1217  lr=0.000366
+17:13:54  Epoch  38/100  loss=0.1211  lr=0.000362
+17:17:35  Epoch  39/100  loss=0.1209  lr=0.000359
+17:21:15  Epoch  40/100  loss=0.1331  lr=0.000355
+17:21:23    VAL (EMA)  MPJPE = 56.93 mm   (best 56.96)
+17:21:23    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+17:25:24  Epoch  41/100  loss=0.1314  lr=0.000352
+17:29:05  Epoch  42/100  loss=0.1304  lr=0.000348
+17:32:45  Epoch  43/100  loss=0.1298  lr=0.000345
+17:36:26  Epoch  44/100  loss=0.1295  lr=0.000341
+17:40:07  Epoch  45/100  loss=0.1287  lr=0.000338
+17:40:15    VAL (EMA)  MPJPE = 57.58 mm   (best 56.93)
+17:43:55  Epoch  46/100  loss=0.1281  lr=0.000334
+17:47:36  Epoch  47/100  loss=0.1278  lr=0.000331
+17:51:17  Epoch  48/100  loss=0.1275  lr=0.000328
+17:54:58  Epoch  49/100  loss=0.1270  lr=0.000325
+17:58:39  Epoch  50/100  loss=0.1265  lr=0.000321
+17:58:47    VAL (EMA)  MPJPE = 57.03 mm   (best 56.93)
+18:02:48  Epoch  51/100  loss=0.1261  lr=0.000318
+18:06:29  Epoch  52/100  loss=0.1257  lr=0.000315
+18:10:10  Epoch  53/100  loss=0.1255  lr=0.000312
+18:13:50  Epoch  54/100  loss=0.1252  lr=0.000309
+18:17:31  Epoch  55/100  loss=0.1249  lr=0.000306
+18:17:39    VAL (EMA)  MPJPE = 56.50 mm   (best 56.93)
+18:17:39    NEW BEST -> checkpoints/best_kinfk_cpn_sota.pth
+18:21:20  Epoch  56/100  loss=0.1245  lr=0.000303
+18:25:01  Epoch  57/100  loss=0.1244  lr=0.000299
+18:28:41  Epoch  58/100  loss=0.1241  lr=0.000296
+18:32:22  Epoch  59/100  loss=0.1239  lr=0.000294
+18:36:02  Epoch  60/100  loss=0.1337  lr=0.000291
+18:36:10    VAL (EMA)  MPJPE = 56.63 mm   (best 56.50)
+18:40:12  Epoch  61/100  loss=0.1327  lr=0.000288
+18:43:52  Epoch  62/100  loss=0.1324  lr=0.000285
+18:47:33  Epoch  63/100  loss=0.1321  lr=0.000282
+18:51:14  Epoch  64/100  loss=0.1315  lr=0.000279
+18:54:56  Epoch  65/100  loss=0.1314  lr=0.000276
+18:55:04    VAL (EMA)  MPJPE = 57.18 mm   (best 56.50)

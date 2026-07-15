@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Data (external — Human3.6M npz/pickles are large and not redistributable)
+data/
+*.npz
+*.pkl
+_cache_*.pkl
+
+# Tensorboard runs
+runs/
+
+# Bulky tqdm console logs (keep the concise epoch logs in logs/)
+logs/*_console.log
+logs/pretrain_*.log
+
+# Editor / OS / tooling
+.claude/
+.DS_Store
+*.swp

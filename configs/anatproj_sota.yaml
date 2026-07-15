@@ -1,0 +1,78 @@
+model_name: AnatomyProj-Mamba_CPN_SOTA
+
+# Skeleton
+num_joints: 17
+num_bones: 16
+num_frames: 243
+
+# Model dims — state_dim must equal joint_embed_dim + bone_embed_dim.
+# Sized to ~0.97M params (PoseMamba-S scale, <1M budget); verified by dry run.
+joint_embed_dim: 48
+bone_embed_dim: 48
+state_dim: 96
+num_heads: 4
+num_blocks: 4
+ssm_expand: 1        # temporal SSM inner expansion (spatial is fixed expand=1)
+mlp_ratio: 2
+fk_hidden: 160
+dropout: 0.1
+d_state: 24          # now threaded into the SSM blocks (was a dead key)
+
+# Decoder — Differentiable Anatomical Projection (novelty A). 'fk' = ablation.
+decoder: dap
+dap_iter: 8          # unrolled projection steps
+dap_rho: 5.0         # bone-length constraint stiffness
+dap_step: 0.05       # projected-GD step (kept < 2/Lipschitz for stability)
+dap_w_floor: 0.1     # min data weight (occluded joints stay slightly anchored)
+
+# Data — VideoPose3D convention, CPN fine-tuned 2D detections, camera-space mm
+dataset: vp3d
+data_dir: data/motion3d/cpn_vp3d
+keypoints_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+train_stride: 81
+val_fraction: 0.05
+
+# Training (seq2seq, PoseMamba/SasMamba-style)
+batch_size: 32
+lr: 0.0005
+weight_decay: 0.01
+lr_sched: cosine     # cosine-to-floor after warmup (was exponential 0.99)
+lr_min_ratio: 0.01
+lr_decay: 0.99       # only used if lr_sched != cosine
+warmup_epochs: 5
+epochs: 120
+clip_grad: 1.0
+use_amp: true
+ema_decay: 0.999
+
+# Loss weights (3D in metres; MPJPE reported ×1000 = mm)
+lambda_bone: 0.0
+lambda_sym: 0.1       # left/right symmetry on shared bone lengths
+lambda_reproj: 0.0
+lambda_vel: 2.0       # down from 20 — let per-frame accuracy lead
+lambda_temp: 0.5      # acceleration smoothness
+lambda_blen: 2.0      # GT bone-length supervision (correct scale)
+lambda_p0: 0.1        # keep the raw regression head honest pre-projection
+
+# Augmentation (occlusion aug teaches the confidence-driven projection + gate)
+aug_joint_mask_min: 0.0
+aug_joint_mask_max: 0.3
+aug_edge_dropout: 0.1
+aug_edge_max_span: 20
+flip_prob: 0.5
+rotation_aug: false
+rotation_max_deg: 30
+jitter_aug: true
+jitter_scale: 0.05
+jitter_shift: 0.05
+jitter_noise: 0.01
+
+# Protocol
+select_on_test: true   # train on all 5 subjects, best-on-test (SOTA convention)
+
+# Pretraining (MPM) — converges fast; 25 is plenty before the supervised run
+mpm_epochs: 25
+mpm_lr: 0.001
+mpm_mask_joint_ratio: 0.2
+mpm_mask_frame_ratio: 0.1

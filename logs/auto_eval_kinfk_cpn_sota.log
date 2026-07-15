@@ -1,0 +1,145 @@
+=== auto_eval watching logs/kinfk_cpn_sota.log | evaluate every 10 ep | occl_every=0 | 2026-06-12_15:41:46 ===
+
+########## EVAL @ epoch 10  (15:41:46) ##########
+  Protocol #1  MPJPE   : 97.1 mm
+  Protocol #2  P-MPJPE : 76.1 mm
+    Directions       82.1
+    Discussion       89.3
+    Eating           93.8
+    Greeting         94.1
+    Phoning          92.7
+    Photo           121.6
+    Posing           76.0
+    Purchases       103.3
+    Sitting         115.5
+    SittingDown     151.7
+    Smoking          90.3
+    Waiting          92.7
+    WalkDog         102.7
+    WalkTogether     81.5
+    Walking          73.3
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 97.1 / 76.1
+
+########## EVAL @ epoch 20  (16:07:28) ##########
+  Protocol #1  MPJPE   : 60.1 mm
+  Protocol #2  P-MPJPE : 46.9 mm
+    Directions       53.5
+    Discussion       55.2
+    Eating           53.8
+    Greeting         56.2
+    Phoning          59.2
+    Photo            77.9
+    Posing           55.7
+    Purchases        55.1
+    Sitting          68.8
+    SittingDown      85.2
+    Smoking          58.6
+    Waiting          57.6
+    WalkDog          64.9
+    WalkTogether     53.0
+    Walking          48.2
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 60.1 / 46.9
+
+########## EVAL @ epoch 30  (16:44:10) ##########
+  Protocol #1  MPJPE   : 56.5 mm
+  Protocol #2  P-MPJPE : 44.0 mm
+    Directions       51.2
+    Discussion       52.7
+    Eating           50.2
+    Greeting         53.1
+    Phoning          56.2
+    Photo            72.5
+    Posing           52.5
+    Purchases        51.5
+    Sitting          65.3
+    SittingDown      79.2
+    Smoking          54.9
+    Waiting          54.5
+    WalkDog          60.7
+    WalkTogether     48.5
+    Walking          44.0
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 56.5 / 44.0
+
+########## EVAL @ epoch 40  (17:21:53) ##########
+  Protocol #1  MPJPE   : 55.4 mm
+  Protocol #2  P-MPJPE : 43.1 mm
+    Directions       50.8
+    Discussion       51.2
+    Eating           49.8
+    Greeting         51.9
+    Phoning          55.2
+    Photo            70.8
+    Posing           51.0
+    Purchases        50.7
+    Sitting          65.0
+    SittingDown      77.1
+    Smoking          54.1
+    Waiting          53.4
+    WalkDog          59.2
+    WalkTogether     47.5
+    Walking          43.2
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 55.4 / 43.1
+
+########## EVAL @ epoch 50  (17:59:35) ##########
+  Protocol #1  MPJPE   : 55.4 mm
+  Protocol #2  P-MPJPE : 43.1 mm
+    Directions       50.8
+    Discussion       51.2
+    Eating           49.8
+    Greeting         51.9
+    Phoning          55.2
+    Photo            70.8
+    Posing           51.0
+    Purchases        50.7
+    Sitting          65.0
+    SittingDown      77.1
+    Smoking          54.1
+    Waiting          53.4
+    WalkDog          59.2
+    WalkTogether     47.5
+    Walking          43.2
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 55.4 / 43.1
+
+########## EVAL @ epoch 60  (18:36:17) ##########
+  Protocol #1  MPJPE   : 54.9 mm
+  Protocol #2  P-MPJPE : 42.7 mm
+    Directions       50.4
+    Discussion       50.6
+    Eating           49.0
+    Greeting         51.7
+    Phoning          54.6
+    Photo            69.9
+    Posing           50.0
+    Purchases        50.4
+    Sitting          66.0
+    SittingDown      76.5
+    Smoking          53.6
+    Waiting          52.6
+    WalkDog          58.7
+    WalkTogether     46.3
+    Walking          42.4
+    SasMamba-base 0.64M -> 41.5 / 34.8
+    PoseMamba-S   0.86M -> ~38-39
+    PoseMamba-L   6.71M -> 38.1 / 32.5
+    Ours          -> 54.9 / 42.7
+
+########## TRAINING ENDED — FINAL eval + occlusion (18:58:09) ##########
+
+########## EVAL @ epoch FINAL-best  (18:58:09) ##########
+----- OCCLUSION @ epoch FINAL-best (18:58:15) -----
+=== auto_eval finished 18:58:20 ===

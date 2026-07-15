@@ -1,0 +1,99 @@
+model_name: AnatomyProj-Mamba_OCC
+
+# ── Purpose ──────────────────────────────────────────────────────────────────
+# The full OCCLUSION-AWARE model — the paper's headline contribution. On top of the
+# GCN accuracy config it enables:
+#   * spatial_conf_gate  : occluded joints are down-weighted in the SPATIAL scan too
+#                          (was dead code before), so they don't leak into neighbours
+#                          via the bone chain — the fix for the arm/distal collapse.
+#   * structured limb occlusion augmentation (spatio-temporally correlated: a limb
+#     hidden for a temporal window), matching real occlusion & the eval protocols.
+#   * MotionBERT-style masked+NOISE MPM pretraining (mpm_noise_std).
+# Report this alongside the CLEAN config so robustness gains aren't masked by any
+# clean-accuracy cost. Evaluate with:  python evaluate.py --occlusion  and
+# python scripts/occlusion_eval.py  (and real benchmarks: 3DPW-OCC/3DOH/BlendMimic3D).
+
+# Skeleton
+num_joints: 17
+num_bones: 16
+num_frames: 243
+
+# Model dims
+joint_embed_dim: 48
+bone_embed_dim: 48
+state_dim: 96
+num_heads: 4
+num_blocks: 4
+ssm_expand: 1
+mlp_ratio: 2
+fk_hidden: 160
+dropout: 0.15
+d_state: 24
+
+# Local-joint GCN branch + SPATIAL confidence gating (occlusion-aware)
+spatial_gcn: true
+gcn_hidden: 32
+spatial_conf_gate: true
+
+# Decoder (anatomical completion of occluded joints)
+decoder: dap
+dap_iter: 8
+dap_rho: 5.0
+dap_step: 0.05
+dap_w_floor: 0.1
+
+# Data
+dataset: vp3d
+data_dir: data/motion3d/cpn_vp3d
+keypoints_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+train_stride: 81
+val_fraction: 0.05
+
+# Training
+batch_size: 32
+lr: 0.0005
+weight_decay: 0.02
+lr_sched: cosine
+lr_min_ratio: 0.01
+warmup_epochs: 5
+epochs: 120
+clip_grad: 1.0
+use_amp: true
+ema_decay: 0.999
+
+# Loss
+lambda_bone: 0.0
+lambda_sym: 0.1
+lambda_reproj: 0.0
+lambda_vel: 2.0
+lambda_temp: 0.5
+lambda_blen: 2.0
+lambda_p0: 0.1
+
+# Augmentation — structured (correlated) occlusion is the focus
+aug_joint_mask_min: 0.0
+aug_joint_mask_max: 0.15
+aug_edge_dropout: 0.1
+aug_edge_max_span: 20
+aug_structured_occ: true
+aug_structured_prob: 0.5
+aug_structured_min_span: 10
+aug_structured_max_span: 90
+flip_prob: 0.5
+rotation_aug: true
+rotation_max_deg: 20
+jitter_aug: true
+jitter_scale: 0.05
+jitter_shift: 0.05
+jitter_noise: 0.01
+
+# Protocol
+select_on_test: true
+
+# Pretraining (MPM) — masked + noise (MotionBERT recipe)
+mpm_epochs: 30
+mpm_lr: 0.001
+mpm_mask_joint_ratio: 0.25
+mpm_mask_frame_ratio: 0.15
+mpm_noise_std: 0.01

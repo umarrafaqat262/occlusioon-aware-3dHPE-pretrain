@@ -1,0 +1,59 @@
+model_name: KinFK-Mamba_CPN
+
+# Skeleton
+num_joints: 17
+num_bones: 16
+num_frames: 243
+
+# Model dims — state_dim must equal joint_embed_dim + bone_embed_dim
+joint_embed_dim: 52
+bone_embed_dim: 52
+state_dim: 104
+num_heads: 4
+num_blocks: 3
+ssm_expand: 2
+mlp_ratio: 2
+fk_hidden: 160
+dropout: 0.1
+d_state: 16
+
+# Data — VideoPose3D convention, CPN fine-tuned 2D detections, camera-space mm
+dataset: vp3d
+data_dir: data/motion3d/cpn_vp3d
+keypoints_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz   # alias; unused by vp3d loader
+train_stride: 81
+val_fraction: 0.05
+
+# Training (seq2seq, PoseMamba/SasMamba-style)
+batch_size: 16
+lr: 0.0005
+weight_decay: 0.01
+lr_decay: 0.99
+warmup_epochs: 5
+epochs: 150
+clip_grad: 1.0
+use_amp: true
+ema_decay: 0.999
+
+# Loss weights (3D in metres; MPJPE reported ×1000 = mm)
+lambda_bone: 0.0      # bone length is architecturally per-clip-shared already
+lambda_sym: 0.1       # left/right symmetry on shared bone lengths
+lambda_reproj: 0.0    # reprojection invalid in camera-mm space — disabled
+lambda_vel: 20.0      # velocity (motion) loss
+lambda_temp: 0.5      # temporal smoothness (acceleration) loss
+
+# Augmentation (occlusion aug teaches the confidence gate; conf=1 in raw CPN)
+aug_joint_mask_min: 0.0
+aug_joint_mask_max: 0.3
+aug_edge_dropout: 0.1
+aug_edge_max_span: 20
+flip_prob: 0.5
+rotation_aug: false
+rotation_max_deg: 30
+
+# Pretraining (MPM)
+mpm_epochs: 40
+mpm_lr: 0.001
+mpm_mask_joint_ratio: 0.2
+mpm_mask_frame_ratio: 0.1

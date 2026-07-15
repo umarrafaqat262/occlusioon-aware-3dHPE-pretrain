@@ -1,0 +1,89 @@
+model_name: AnatomyProj-Mamba_GCN
+
+# ── Purpose ──────────────────────────────────────────────────────────────────
+# Clean-accuracy config that adds the local-joint GCN branch (Pose Magic / HGMamba
+# / MDTF recipe) fused with the spatial SSM — the change every SOTA Mamba-pose
+# method makes because Mamba under-attends local joint structure. Bottleneck GCN
+# (gcn_hidden=32) keeps the model < 1M params. This is the main lever to close the
+# clean-CPN gap toward the <1M SOTA cluster.
+
+# Skeleton
+num_joints: 17
+num_bones: 16
+num_frames: 243
+
+# Model dims
+joint_embed_dim: 48
+bone_embed_dim: 48
+state_dim: 96
+num_heads: 4
+num_blocks: 4
+ssm_expand: 1
+mlp_ratio: 2
+fk_hidden: 160
+dropout: 0.15
+d_state: 24
+
+# Local-joint GCN branch (NEW) — bottleneck keeps params < 1M
+spatial_gcn: true
+gcn_hidden: 32
+
+# Decoder
+decoder: dap
+dap_iter: 8
+dap_rho: 5.0
+dap_step: 0.05
+dap_w_floor: 0.1
+
+# Data
+dataset: vp3d
+data_dir: data/motion3d/cpn_vp3d
+keypoints_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+train_stride: 81
+val_fraction: 0.05
+
+# Training
+batch_size: 32
+lr: 0.0005
+weight_decay: 0.02
+lr_sched: cosine
+lr_min_ratio: 0.01
+warmup_epochs: 5
+epochs: 120
+clip_grad: 1.0
+use_amp: true
+ema_decay: 0.999
+
+# Loss
+lambda_bone: 0.0
+lambda_sym: 0.1
+lambda_reproj: 0.0
+lambda_vel: 2.0
+lambda_temp: 0.5
+lambda_blen: 2.0
+lambda_p0: 0.1
+
+# Augmentation — light occlusion masking (regularizer, not the focus here)
+aug_joint_mask_min: 0.0
+aug_joint_mask_max: 0.1
+aug_edge_dropout: 0.05
+aug_edge_max_span: 20
+aug_structured_occ: false
+flip_prob: 0.5
+rotation_aug: true
+rotation_max_deg: 20
+jitter_aug: true
+jitter_scale: 0.05
+jitter_shift: 0.05
+jitter_noise: 0.01
+
+# Protocol
+select_on_test: true
+
+# Pretraining (MPM)
+mpm_epochs: 25
+mpm_lr: 0.001
+mpm_mask_joint_ratio: 0.2
+mpm_mask_frame_ratio: 0.1
+mpm_noise_std: 0.0

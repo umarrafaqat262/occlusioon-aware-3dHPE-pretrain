@@ -1,0 +1,15 @@
+Loaded checkpoints/best_anatproj_sota.pth (epoch 44, EMA)
+
+====================================================
+  [3] TEST set (S9/S11), no flip-TTA
+    DAP-projected (final) MPJPE : 49.6 mm
+    Raw P0 (pre-projection)     : 50.5 mm
+    DAP - P0 delta              : -1.0 mm
+====================================================
+
+====================================================
+  [4] TRAIN-CLEAN fit (S1/5/6/7/8, no aug, ~1920 clips)
+    DAP-projected MPJPE         : 33.3 mm
+    Raw P0 MPJPE                : 34.8 mm
+    train-clean vs test gap     : 33.3  vs  49.6
+====================================================

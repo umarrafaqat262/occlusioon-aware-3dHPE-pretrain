@@ -1,0 +1,6 @@
+12:31:55  ============================================================
+12:31:55    AnatomyProj-Mamba_V2  |  cuda  |  tag=anatproj_v2
+12:31:58    train batches 554  val batches 74
+12:31:58    Parameters: 1,111,624  (1.112M)
+12:31:58  ============================================================
+12:31:58  Loaded pretrained | missing=0 unexpected=0
