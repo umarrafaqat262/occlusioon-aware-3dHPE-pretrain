@@ -19,9 +19,16 @@ Measure the **true clean-CPN accuracy ceiling** of the AnatomyProj-Mamba archite
 |---|---|---|---|
 | SasMamba | < 1M | **41.5** | 34.8 |
 | PoseMamba-S | < 1M | **~38–39** | — |
-| **AnatomyProj-Mamba (this run)** | **0.97M** | **~42** (projected*) | — |
+| **AnatomyProj-Mamba (this run)** | **0.97M** | **TBD** (test eval pending) | — |
 
-\*Current training MPJPE ~41.9mm at epoch 21; final eval needed after all 120 epochs + EMA.
+> ⚠️ **Metric caveat — read before comparing.** The ~42 mm figure below is the
+> **training-batch MPJPE** (`train.py` progress-bar, last iteration of the epoch on
+> augmented train data). It is **not** the test result and is systematically
+> **optimistic** — this repo's own diagnostics showed a **~16 mm train→test gap**
+> (33.3 mm train vs 49.6 mm test). The comparable test number is the
+> **`VAL (EMA) MPJPE`** line logged every 5 epochs and, definitively, the
+> `evaluate.py` run after 120 epochs (flip-TTA + frame-dedup). Do **not** claim we
+> beat the 48.2 mm baseline until that test number is in — 48.2 was a *test* number.
 
 ---
 
@@ -104,9 +111,13 @@ PYTHONPATH=$PWD python evaluate.py --config configs/anatproj_clean.yaml \
 
 Training started from MPM-pretrained checkpoint. **21 epochs completed** as of last capture (epoch 22 in progress).
 
-### 4.1 Per-epoch training metrics
+### 4.1 Per-epoch TRAINING metrics (not test — see caveat above)
 
-| Epoch | Loss (epoch avg) | Loss (end of epoch) | MPJPE (end of epoch) | Learning Rate |
+The MPJPE column is the training-batch metric from the progress bar, not the test
+set. Test numbers (`VAL (EMA) MPJPE`, logged every 5 epochs) must be pasted here
+from the training log — they are the only figures comparable to published/CPN numbers.
+
+| Epoch | Loss (epoch avg) | Loss (end of epoch) | train MPJPE (last iter) | Learning Rate |
 |---|---|---|---|---|
 | 1 | 0.2371 | 0.1510 | 124.7mm | 1.0e-4 (warmup) |
 | 2 | 0.1170 | 0.0975 | 81.5mm | 2.0e-4 (warmup) |
@@ -146,7 +157,7 @@ Training started from MPM-pretrained checkpoint. **21 epochs completed** as of l
 1. The **cosine LR schedule** peaks at epoch 5 (5e-4) and has decayed ~4% by epoch 21. The loss follows a steady downward trend.
 2. The **EMA (exponential moving average)** with decay 0.999 tracks the online model; the best checkpoint reflects EMA weights.
 3. Per-epoch MPJPE fluctuates ±3mm around the trend — typical for H36M training with mild augmentation. The **test-time evaluation** (after fine-tune completes) will average over multi-frame predictions and should show lower, more stable MPJPE.
-4. Compared to the repo's previous best `best_anatproj_sota.pth` (48.2mm), the current training MPJPE of **~42mm** is already **~6mm lower** at epoch 21/120, suggesting the clean config + pretraining + fixes are working.
+4. The **48.2 mm baseline is a TEST number**; the ~42 mm here is a **training** number, so they are **not directly comparable** (training MPJPE is expected to sit well below test given the ~16 mm gap). The healthy, steadily-decreasing trajectory is a good sign the clean config + pretraining + fixes are working, but the actual clean-CPN result is **unknown until `evaluate.py`** runs at epoch 120. Report VAL (EMA) at ep 5/10/15/20 to track the real test curve.
 
 ---
 
@@ -154,19 +165,27 @@ Training started from MPM-pretrained checkpoint. **21 epochs completed** as of l
 
 All models evaluated on **Human3.6M CPN 243f** (Protocol #1, mm):
 
-| Model | Params | MPJPE ↓ | P-MPJPE ↓ | Year |
-|---|---|---|---|---|
-| PoseFormer | ~9.4M | 44.3 | — | CVPR'22 |
-| MotionBERT (ft) | ~7.5M | 39.6 | 31.5 | ECCV'22 |
-| MixSTE | ~17.8M | 39.8 | 30.2 | CVPR'22 |
-| D3DP | ~3.0M | 41.8 | — | CVPR'24 |
-| SasMamba | < 1M | 41.5 | 34.8 | 2024 |
-| PoseMamba-S | < 1M | ~38-39 | — | 2024 |
-| HGMamba | < 1M | 39.8 | — | 2024 |
-| **AnatomyProj-Mamba (prev)** | 0.97M | **48.2** | 37.9 | repo baseline |
-| **AnatomyProj-Mamba CLEAN (this run)** | 0.97M | **~42 (projected)** | — | **in progress** |
+Numbers below are from the primary papers (cross-checked against the MotionAGFormer /
+KTPFormer benchmark tables). Diffusion methods (D3DP) are cited as **J-Agg** (aggregated,
+deployable), NOT the oracle J-Best.
 
-The clean run is on track to **close the ~6mm gap** between the repo's previous best (48.2mm, trained with occlusion augmentation) and the < 1M SOTA cluster (~39-42mm).
+| Model | Params | MPJPE ↓ | P-MPJPE ↓ | Venue |
+|---|---|---|---|---|
+| MixSTE | 33.6M | 40.9 | 32.6 | CVPR'22 |
+| MotionBERT (ft) | ~42M | 39.2 | 32.9 | ICCV'23 |
+| MotionAGFormer-B | 11.7M | 38.4 | 32.6 | WACV'24 |
+| D3DP (J-Agg) | ~34M | 39.5 | 31.6 | ICCV'23 |
+| KTPFormer | 33.7M | 37.3 | 30.1 | CVPR'24 |
+| _— <1M efficient cluster (our target) —_ | | | | |
+| SasMamba | 0.64M | 41.5 | 34.8 | 2024 |
+| PoseMamba-S | 0.90M | 41.8 | 35.0 | AAAI'25 |
+| PoseMamba-L (ref, >1M) | 6.7M | 38.1 | 32.5 | AAAI'25 |
+| **AnatomyProj-Mamba (prev, TEST)** | 0.97M | **48.2** | 37.9 | repo baseline |
+| **AnatomyProj-Mamba CLEAN (this run)** | 0.97M | **TBD — eval pending** | — | in progress |
+
+Goal: bring the clean-CPN **test** MPJPE into the <1M cluster (SasMamba 41.5 / PoseMamba-S
+41.8). Whether this run gets there is unknown until `evaluate.py` reports the test number;
+the training curve only indicates the optimization is healthy.
 
 ---
 

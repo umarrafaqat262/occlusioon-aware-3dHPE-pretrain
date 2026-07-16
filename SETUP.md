@@ -71,14 +71,21 @@ occlusioon-aware-3dHPE-pretrain/
 │   ├── anatproj_gcn.yaml       ← GCN branch config
 │   └── anatproj_occ.yaml       ← Full occlusion-aware config
 ├── model/
-│   ├── anatomyproj_mamba.py    ← Main model
-│   ├── mpm.py                  ← MPM pretraining head
-│   ├── ssm.py                  ← Mamba SSM blocks
-│   └── dap.py                  ← DAP decoder
+│   ├── bsmamba.py              ← Main model (BoneStateMamba) + DAPDecoder/FKDecoder + carry_forward_fill
+│   ├── st_block.py             ← Spatio-temporal block (spatial→temporal)
+│   ├── spatial_block.py        ← Joint mixer: BiSSM + parent prior + optional GCN branch
+│   ├── temporal_block.py       ← Per-joint temporal SSM (single/multi-scale)
+│   ├── ssm.py                  ← ConfMamba (confidence-gated) + BiSSM
+│   ├── bone_ops.py             ← decompose_bones / reconstruct_fk
+│   └── mamba_block.py          ← BiGRU fallback (unused by main model)
 ├── common/
-│   └── dataset.py              ← Legacy dataset loader
+│   ├── dataset_vp3d.py         ← ACTIVE loader (VideoPose3D/CPN, all configs use this)
+│   ├── dataset.py              ← Legacy MotionBERT-pickle loader (SH path only)
+│   ├── augmentation.py         ← flip/rotation/jitter + occlusion masking
+│   ├── skeleton.py             ← H36M-17 parents/bones/scan order
+│   └── vp3d/                   ← vendored VideoPose3D camera params
 ├── scripts/
-│   └── occlusion_eval.py       ← Occlusion study runner
+│   └── occlusion_eval.py       ← Occlusion study runner (BlendMimic3D-style σ sweep)
 ├── data/motion3d/cpn_vp3d/     ← Dataset files
 ├── checkpoints/                ← Saved model weights
 ├── smoke_test.py               ← Pre-training readiness check
