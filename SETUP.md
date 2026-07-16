@@ -133,52 +133,112 @@ Both `.npz` files downloaded and placed in `data/motion3d/cpn_vp3d/`. No corrupt
 | Item | Detail |
 |---|---|
 | Config | `anatproj_clean.yaml` |
-| Epochs | **22 / 120** (~18% complete) |
-| Current loss | ~0.05 |
-| Current MPJPE | ~40–45mm (training, last-iteration) |
+| Epochs | **62 / 120** (~52% complete) |
+| Current train loss | ~0.042 |
+| Current LR | 2.69e-4 (cosine decaying to ~0) |
+| Best test MPJPE (EMA) | **51.06mm** (epoch 35) |
 | Started from | MPM-pretrained checkpoint |
 | Batch size | 32 |
-| Learning rate | 4.8e-4 (cosine schedule, peaked at 5e-4) |
 | GPU util | 100% |
 | Speed | ~1.05s/iter, ~9.7 min/epoch |
-| Elapsed | ~3.5 hours |
-| Remaining | ~16 hours |
+| Elapsed | ~10 hours |
+| Remaining | ~10 hours |
 | PID | 241100 (running under `setsid`) |
 | Log file | `/opt/dlami/nvme/train_clean_final2.log` |
 
-## Results so far (per-epoch)
+## Test-set evaluation results (every 5 epochs, S9/S11)
 
-| Epoch | Loss | MPJPE | LR |
-|---|---|---|---|
-| 1 | 0.2371 | 124.7mm | 1.0e-4 |
-| 2 | 0.1170 | 81.5mm | 2.0e-4 |
-| 3 | 0.0918 | 75.9mm | 3.0e-4 |
-| 4 | 0.0816 | 68.7mm | 4.0e-4 |
-| 5 | 0.0755 | 54.7mm | 5.0e-4 |
-| 6 | 0.0707 | 60.8mm | 5.0e-4 |
-| 7 | 0.0676 | 57.1mm | 5.0e-4 |
-| 8 | 0.0653 | 52.3mm | 5.0e-4 |
-| 9 | 0.0634 | 56.2mm | 4.99e-4 |
-| 10 | 0.0616 | 59.8mm | 4.99e-4 |
-| 11 | 0.0603 | 50.2mm | 4.98e-4 |
-| 12 | 0.0590 | 49.1mm | 4.97e-4 |
-| 13 | 0.0577 | 47.3mm | 4.95e-4 |
-| 14 | 0.0569 | 44.6mm | 4.94e-4 |
-| 15 | 0.0559 | 44.3mm | 4.93e-4 |
-| 16 | 0.0553 | 41.2mm | 4.91e-4 |
-| 17 | 0.0543 | 44.3mm | 4.89e-4 |
-| 18 | 0.0537 | 45.6mm | 4.87e-4 |
-| 19 | 0.0532 | 43.5mm | 4.85e-4 |
-| 20 | 0.0527 | 43.9mm | 4.82e-4 |
-| 21 | 0.0521 | **41.9mm** | 4.80e-4 |
+The training script evaluates the EMA model on the test set every 5 epochs (H36M best-on-test convention).
 
-**Checkpoint saved**: `checkpoints/best_anatproj_clean.pth` (15.9 MB)
+| Epoch | Test MPJPE | Best |
+|---|---|---|
+| 5 | 80.67mm | ✓ |
+| 10 | 56.12mm | ✓ |
+| 15 | 53.69mm | ✓ |
+| 20 | 52.42mm | ✓ |
+| 25 | 51.63mm | ✓ |
+| 30 | 51.25mm | ✓ |
+| 35 | **51.06mm** | ✓ **BEST** |
+| 40 | 51.07mm | — |
+| 45 | 51.07mm | — |
+| 50 | 51.30mm | — |
+| 55 | 51.21mm | — |
+| 60 | 51.29mm | — |
+
+## Per-epoch training loss
+
+| Epoch | Loss | LR |
+|---|---|---|
+| 1 | 0.2371 | 1.0e-4 |
+| 2 | 0.1170 | 2.0e-4 |
+| 3 | 0.0918 | 3.0e-4 |
+| 4 | 0.0816 | 4.0e-4 |
+| 5 | 0.0755 | 5.0e-4 |
+| 6 | 0.0707 | 5.0e-4 |
+| 7 | 0.0676 | 5.0e-4 |
+| 8 | 0.0653 | 5.0e-4 |
+| 9 | 0.0634 | 4.99e-4 |
+| 10 | 0.0616 | 4.99e-4 |
+| 11 | 0.0603 | 4.98e-4 |
+| 12 | 0.0590 | 4.97e-4 |
+| 13 | 0.0577 | 4.95e-4 |
+| 14 | 0.0569 | 4.94e-4 |
+| 15 | 0.0559 | 4.93e-4 |
+| 16 | 0.0553 | 4.91e-4 |
+| 17 | 0.0543 | 4.89e-4 |
+| 18 | 0.0537 | 4.87e-4 |
+| 19 | 0.0532 | 4.85e-4 |
+| 20 | 0.0527 | 4.82e-4 |
+| 21 | 0.0521 | 4.80e-4 |
+| 22 | 0.0515 | 4.77e-4 |
+| 23 | 0.0511 | 4.74e-4 |
+| 24 | 0.0505 | 4.71e-4 |
+| 25 | 0.0503 | 4.67e-4 |
+| 26 | 0.0498 | 4.64e-4 |
+| 27 | 0.0495 | 4.60e-4 |
+| 28 | 0.0493 | 4.57e-4 |
+| 29 | 0.0489 | 4.53e-4 |
+| 30 | 0.0487 | 4.49e-4 |
+| 31 | 0.0484 | 4.45e-4 |
+| 32 | 0.0481 | 4.41e-4 |
+| 33 | 0.0478 | 4.37e-4 |
+| 34 | 0.0475 | 4.33e-4 |
+| 35 | 0.0472 | 4.28e-4 |
+| 36 | 0.0469 | 4.24e-4 |
+| 37 | 0.0466 | 4.19e-4 |
+| 38 | 0.0463 | 4.15e-4 |
+| 39 | 0.0460 | 4.10e-4 |
+| 40 | 0.0457 | 4.05e-4 |
+| 41 | 0.0454 | 4.00e-4 |
+| 42 | 0.0451 | 3.95e-4 |
+| 43 | 0.0448 | 3.90e-4 |
+| 44 | 0.0447 | 3.85e-4 |
+| 45 | 0.0444 | 3.80e-4 |
+| 46 | 0.0444 | 3.66e-4 |
+| 47 | 0.0442 | 3.60e-4 |
+| 48 | 0.0441 | 3.54e-4 |
+| 49 | 0.0438 | 3.48e-4 |
+| 50 | 0.0437 | 3.42e-4 |
+| 51 | 0.0435 | 3.35e-4 |
+| 52 | 0.0434 | 3.29e-4 |
+| 53 | 0.0432 | 3.23e-4 |
+| 54 | 0.0431 | 3.16e-4 |
+| 55 | 0.0429 | 3.09e-4 |
+| 56 | 0.0427 | 3.03e-4 |
+| 57 | 0.0426 | 2.96e-4 |
+| 58 | 0.0423 | 2.90e-4 |
+| 59 | 0.0423 | 2.83e-4 |
+| 60 | 0.0423 | 2.76e-4 |
+| 61 | 0.0421 | 2.69e-4 |
+
+**Best checkpoint**: `checkpoints/best_anatproj_clean.pth` (15.9 MB) — epoch 35, 51.06mm test MPJPE
 
 ## What is pending
 
 | Step | Config | Depends on | Est. time |
-|---|---|---|---|
-| **Evaluate** | `anatproj_clean.yaml` | Fine-tune completes | ~30 min |
+|---|---|---|---|---|
+| **Complete 120 epochs** | `anatproj_clean.yaml` | Running now | ~10h |
+| **Evaluate best + final** | `evaluate.py` | Fine-tune completes | ~30 min |
 | GCN branch train | `anatproj_gcn.yaml` | Clean eval results | ~20h |
 | Occlusion model train | `anatproj_occ.yaml` | GCN results | ~20h |
 | Occlusion ablation study | `scripts/occlusion_eval.py` | Occlusion model | ~2h |

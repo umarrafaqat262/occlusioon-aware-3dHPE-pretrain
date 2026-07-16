@@ -6,7 +6,7 @@
 > **Dataset**: Human3.6M, CPN fine-tuned 2D keypoints, 243-frame seq2seq (VideoPose3D protocol)
 > **Train split**: S1, S5, S6, S7, S8 | **Test split**: S9, S11 (standard H36M best-on-test convention, `select_on_test: true`)
 > **Hardware**: NVIDIA L4, CUDA 13.2, torch 2.14.0.dev20260626
-> **Status**: Fine-tuning in progress (epoch 22/120, estimated ~16h remaining)
+> **Status**: Fine-tuning in progress (epoch 62/120, estimated ~10h remaining)
 
 ---
 
@@ -87,7 +87,7 @@ PYTHONPATH=$PWD python smoke_test.py
 # Stage 1 — MPM Pretrain (25 epochs)
 PYTHONPATH=$PWD python pretrain.py --config configs/anatproj_clean.yaml
 
-# Stage 2 — Supervised Fine-tune (120 epochs, currently epoch 22/120)
+# Stage 2 — Supervised Fine-tune (120 epochs, currently epoch 62/120)
 PYTHONPATH=$PWD python train.py --config configs/anatproj_clean.yaml \
     --pretrained checkpoints/pretrained_anatomyproj_mamba_clean.pth \
     --tag anatproj_clean
@@ -109,55 +109,116 @@ PYTHONPATH=$PWD python evaluate.py --config configs/anatproj_clean.yaml \
 
 ## 4. Results — Supervised Fine-tune (in progress)
 
-Training started from MPM-pretrained checkpoint. **21 epochs completed** as of last capture (epoch 22 in progress).
+Training started from MPM-pretrained checkpoint. **61 epochs completed** as of last capture (epoch 62 in progress).
 
-### 4.1 Per-epoch TRAINING metrics (not test — see caveat above)
+### 4.1 Per-epoch training loss
 
-The MPJPE column is the training-batch metric from the progress bar, not the test
-set. Test numbers (`VAL (EMA) MPJPE`, logged every 5 epochs) must be pasted here
-from the training log — they are the only figures comparable to published/CPN numbers.
+| Epoch | Train Loss (avg) | LR |
+|---|---|---|
+| 1 | 0.2371 | 1.0e-4 |
+| 2 | 0.1170 | 2.0e-4 |
+| 3 | 0.0918 | 3.0e-4 |
+| 4 | 0.0816 | 4.0e-4 |
+| 5 | 0.0755 | 5.0e-4 |
+| 6 | 0.0707 | 5.0e-4 |
+| 7 | 0.0676 | 5.0e-4 |
+| 8 | 0.0653 | 5.0e-4 |
+| 9 | 0.0634 | 4.99e-4 |
+| 10 | 0.0616 | 4.99e-4 |
+| 11 | 0.0603 | 4.98e-4 |
+| 12 | 0.0590 | 4.97e-4 |
+| 13 | 0.0577 | 4.95e-4 |
+| 14 | 0.0569 | 4.94e-4 |
+| 15 | 0.0559 | 4.93e-4 |
+| 16 | 0.0553 | 4.91e-4 |
+| 17 | 0.0543 | 4.89e-4 |
+| 18 | 0.0537 | 4.87e-4 |
+| 19 | 0.0532 | 4.85e-4 |
+| 20 | 0.0527 | 4.82e-4 |
+| 21 | 0.0521 | 4.80e-4 |
+| 22 | 0.0515 | 4.77e-4 |
+| 23 | 0.0511 | 4.74e-4 |
+| 24 | 0.0505 | 4.71e-4 |
+| 25 | 0.0503 | 4.67e-4 |
+| 26 | 0.0498 | 4.64e-4 |
+| 27 | 0.0495 | 4.60e-4 |
+| 28 | 0.0493 | 4.57e-4 |
+| 29 | 0.0489 | 4.53e-4 |
+| 30 | 0.0487 | 4.49e-4 |
+| 31 | 0.0484 | 4.45e-4 |
+| 32 | 0.0481 | 4.41e-4 |
+| 33 | 0.0478 | 4.37e-4 |
+| 34 | 0.0475 | 4.33e-4 |
+| 35 | 0.0472 | 4.28e-4 |
+| 36 | 0.0469 | 4.24e-4 |
+| 37 | 0.0466 | 4.19e-4 |
+| 38 | 0.0463 | 4.15e-4 |
+| 39 | 0.0460 | 4.10e-4 |
+| 40 | 0.0457 | 4.05e-4 |
+| 41 | 0.0454 | 4.00e-4 |
+| 42 | 0.0451 | 3.95e-4 |
+| 43 | 0.0448 | 3.90e-4 |
+| 44 | 0.0447 | 3.85e-4 |
+| 45 | 0.0444 | 3.80e-4 |
+| 46 | 0.0444 | 3.66e-4 |
+| 47 | 0.0442 | 3.60e-4 |
+| 48 | 0.0441 | 3.54e-4 |
+| 49 | 0.0438 | 3.48e-4 |
+| 50 | 0.0437 | 3.42e-4 |
+| 51 | 0.0435 | 3.35e-4 |
+| 52 | 0.0434 | 3.29e-4 |
+| 53 | 0.0432 | 3.23e-4 |
+| 54 | 0.0431 | 3.16e-4 |
+| 55 | 0.0429 | 3.09e-4 |
+| 56 | 0.0427 | 3.03e-4 |
+| 57 | 0.0426 | 2.96e-4 |
+| 58 | 0.0423 | 2.90e-4 |
+| 59 | 0.0423 | 2.83e-4 |
+| 60 | 0.0423 | 2.76e-4 |
+| 61 | 0.0421 | 2.69e-4 |
 
-| Epoch | Loss (epoch avg) | Loss (end of epoch) | train MPJPE (last iter) | Learning Rate |
-|---|---|---|---|---|
-| 1 | 0.2371 | 0.1510 | 124.7mm | 1.0e-4 (warmup) |
-| 2 | 0.1170 | 0.0975 | 81.5mm | 2.0e-4 (warmup) |
-| 3 | 0.0918 | 0.0903 | 75.9mm | 3.0e-4 (warmup) |
-| 4 | 0.0816 | 0.0816 | 68.7mm | 4.0e-4 (warmup) |
-| 5 | 0.0755 | 0.0662 | 54.7mm | 5.0e-4 (peak) |
-| 6 | 0.0707 | 0.0717 | 60.8mm | 5.0e-4 |
-| 7 | 0.0676 | 0.0681 | 57.1mm | 5.0e-4 |
-| 8 | 0.0653 | 0.0630 | 52.3mm | 5.0e-4 |
-| 9 | 0.0634 | 0.0668 | 56.2mm | 4.99e-4 |
-| 10 | 0.0616 | 0.0704 | 59.8mm | 4.99e-4 |
-| 11 | 0.0603 | 0.0599 | 50.2mm | 4.98e-4 |
-| 12 | 0.0590 | 0.0594 | 49.1mm | 4.97e-4 |
-| 13 | 0.0577 | 0.0570 | 47.3mm | 4.95e-4 |
-| 14 | 0.0569 | 0.0542 | 44.6mm | 4.94e-4 |
-| 15 | 0.0559 | 0.0538 | 44.3mm | 4.93e-4 |
-| 16 | 0.0553 | 0.0505 | 41.2mm | 4.91e-4 |
-| 17 | 0.0543 | 0.0535 | 44.3mm | 4.89e-4 |
-| 18 | 0.0537 | 0.0549 | 45.6mm | 4.87e-4 |
-| 19 | 0.0532 | 0.0529 | 43.5mm | 4.85e-4 |
-| 20 | 0.0527 | 0.0533 | 43.9mm | 4.82e-4 |
-| 21 | 0.0521 | 0.0512 | **41.9mm** | 4.80e-4 |
+### 4.2 Test-set evaluation results (every 5 epochs, S9/S11)
 
-*Epoch 22 in progress* — loss ~0.05, MPJPE ~40-45mm.
+The training script evaluates the EMA model on the **test set** (S9/S11) every 5 epochs.
+This is the H36M best-on-test convention (`select_on_test: true`).
 
-### 4.2 Training trajectory
+| Epoch | Test MPJPE (EMA) | Best So Far | Checkpoint |
+|---|---|---|---|
+| 5 | 80.67mm | ✓ new best | best_anatproj_clean.pth |
+| 10 | 56.12mm | ✓ new best | best_anatproj_clean.pth |
+| 15 | 53.69mm | ✓ new best | best_anatproj_clean.pth |
+| 20 | 52.42mm | ✓ new best | best_anatproj_clean.pth |
+| 25 | 51.63mm | ✓ new best | best_anatproj_clean.pth |
+| 30 | 51.25mm | ✓ new best | best_anatproj_clean.pth |
+| 35 | **51.06mm** | ✓ **BEST** | best_anatproj_clean.pth |
+| 40 | 51.07mm | — | — |
+| 45 | 51.07mm | — | — |
+| 50 | 51.30mm | — | — |
+| 55 | 51.21mm | — | — |
+| 60 | 51.29mm | — | — |
 
-- **Rapid initial drop**: MPJPE fell from ~125mm → ~55mm in the first 5 epochs (warmup phase)
-- **Stabilisation**: Epochs 5-21 show gradual improvement from ~55mm → ~42mm
-- **Current plateau**: Loss hovers around 0.05, MPJPE around 40-45mm with per-epoch fluctuation
-- **Best checkpoint so far**: `checkpoints/best_anatproj_clean.pth` (15.9 MB, saved at lowest validation/test loss)
+### 4.3 Training trajectory
+
+- **Rapid initial drop**: Train loss 0.2371 → 0.0616 in first 10 epochs
+- **Steady decline**: Train loss 0.0616 → **0.0421** by epoch 61
+- **Test MPJPE plateau**: Best test MPJPE **51.06mm** at epoch 35; stuck around 51mm since then
+- **Train-test gap widening**: Training loss keeps dropping (0.0421) while test stays flat (~51mm) — mild overfitting despite 0.15 dropout and 0.02 weight decay
+- **Cosine LR schedule**: Peaked at 5e-4 (epoch 5), now at 2.69e-4 and decaying to ~0 by epoch 120
+- **Best checkpoint**: `checkpoints/best_anatproj_clean.pth` (15.9 MB) at epoch 35 (51.06mm test)
 - **Training speed**: ~1.05s/iter × 554 iters/epoch ≈ 9.7 min/epoch on NVIDIA L4
 - **Throughput**: ~10h for 60 epochs, ~19-20h for full 120 epochs
 
-### 4.3 Key observations
+### 4.4 Comparison to repo baseline
 
-1. The **cosine LR schedule** peaks at epoch 5 (5e-4) and has decayed ~4% by epoch 21. The loss follows a steady downward trend.
-2. The **EMA (exponential moving average)** with decay 0.999 tracks the online model; the best checkpoint reflects EMA weights.
-3. Per-epoch MPJPE fluctuates ±3mm around the trend — typical for H36M training with mild augmentation. The **test-time evaluation** (after fine-tune completes) will average over multi-frame predictions and should show lower, more stable MPJPE.
-4. The **48.2 mm baseline is a TEST number**; the ~42 mm here is a **training** number, so they are **not directly comparable** (training MPJPE is expected to sit well below test given the ~16 mm gap). The healthy, steadily-decreasing trajectory is a good sign the clean config + pretraining + fixes are working, but the actual clean-CPN result is **unknown until `evaluate.py`** runs at epoch 120. Report VAL (EMA) at ep 5/10/15/20 to track the real test curve.
+| Model | Test MPJPE | Note |
+|---|---|---|
+| Previous best (`best_anatproj_sota.pth`) | **48.2mm** | Trained with occlusion augmentation |
+| This run (clean, best so far at ep 35) | **51.06mm** | Clean ceiling, occlusion aug OFF |
+| Target (<1M SOTA cluster) | **~39-42mm** | SasMamba / PoseMamba-S |
+
+The ~3mm gap to the previous baseline is expected — that model had occlusion augmentation
+which acts as a regulariser. The GCN branch (`anatproj_gcn.yaml`) is the next lever to
+close this gap.
 
 ---
 
@@ -181,11 +242,10 @@ deployable), NOT the oracle J-Best.
 | PoseMamba-S | 0.90M | 41.8 | 35.0 | AAAI'25 |
 | PoseMamba-L (ref, >1M) | 6.7M | 38.1 | 32.5 | AAAI'25 |
 | **AnatomyProj-Mamba (prev, TEST)** | 0.97M | **48.2** | 37.9 | repo baseline |
-| **AnatomyProj-Mamba CLEAN (this run)** | 0.97M | **TBD — eval pending** | — | in progress |
+| **AnatomyProj-Mamba CLEAN (this run)** | 0.97M | **51.06** (best, in progress) | — | this run |
 
 Goal: bring the clean-CPN **test** MPJPE into the <1M cluster (SasMamba 41.5 / PoseMamba-S
-41.8). Whether this run gets there is unknown until `evaluate.py` reports the test number;
-the training curve only indicates the optimization is healthy.
+41.8). Currently at 51.06mm after epoch 35 (plateaued). The GCN branch is the next lever.
 
 ---
 
@@ -194,19 +254,19 @@ the training curve only indicates the optimization is healthy.
 | File | Size | Description |
 |---|---|---|
 | `pretrained_anatomyproj_mamba_clean.pth` | 3.8 MB | MPM-pretrained backbone (25 epochs, loss 0.00049) |
-| `best_anatproj_clean.pth` | 15.9 MB | Best supervised fine-tune checkpoint so far (21 epochs, ~42mm MPJPE) |
+| `best_anatproj_clean.pth` | 15.9 MB | Best checkpoint (epoch 35, 51.06mm test MPJPE) |
 | `best_anatproj_sota.pth` | 15.9 MB | Previous repo baseline (48.2mm) |
 
 ---
 
 ## 7. What's next (pending fine-tune)
 
-1. **Complete 120 epochs** (~16h remaining)
-2. **Evaluate on test set**: `PYTHONPATH=$PWD python evaluate.py --config configs/anatproj_clean.yaml --checkpoint checkpoints/best_anatproj_clean.pth`
-3. **Repeat for GCN config** (`anatproj_gcn.yaml`) to chase PoseMamba-S territory (~38-39mm)
+1. **Complete 120 epochs** (~10h remaining)
+2. **Evaluate final checkpoint + best checkpoint**: `PYTHONPATH=$PWD python evaluate.py --config configs/anatproj_clean.yaml --checkpoint checkpoints/best_anatproj_clean.pth`
+3. **GCN branch** (`anatproj_gcn.yaml`) — main accuracy lever to chase <1M SOTA (~39-42mm)
 4. **Full occlusion-aware model** (`anatproj_occ.yaml`) with structured occlusion aug + spatial conf gate
 5. **Occlusion ablation study**: per-limb occlusion sweep, noise robustness, confidence-off ablation
 
 ---
 
-*Last updated: 2026-07-16 10:00 UTC*
+*Last updated: 2026-07-16 14:30 UTC*
