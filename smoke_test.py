@@ -22,7 +22,8 @@ from train import augment
 
 CONFIGS = ['configs/anatproj_clean.yaml',
            'configs/anatproj_gcn.yaml',
-           'configs/anatproj_occ.yaml']
+           'configs/anatproj_occ.yaml',
+           'configs/csm_s.yaml']
 PARAM_BUDGET = 1_000_000
 B = 2
 
@@ -52,6 +53,29 @@ def check_config(path, device):
     if getattr(cfg, 'spatial_conf_gate', False):
         assert sb.ssm.conf_gate, "spatial_conf_gate=true but BiSSM gating is off"
         print("  spatial conf-gate: ON")
+    # CSM-Pose redesign modules
+    if getattr(cfg, 'use_dct', False):
+        assert model.dct is not None, "use_dct=true but DCT front-end not built"
+        print(f"  DCT denoise: ON (n_coef={model.dct.n_coef})")
+    if getattr(cfg, 'spatial_kpa', False):
+        assert sb.kpa is not None, "spatial_kpa=true but KPA not built"
+        print("  KPA graph prior: ON")
+    if getattr(cfg, 'spatial_lap_pe', 0):
+        assert sb.lap_pe, "spatial_lap_pe set but PE not built"
+        print("  Laplacian PE: ON")
+    if getattr(cfg, 'spatial_limb_reorder', False):
+        assert sb.limb_reorder, "spatial_limb_reorder=true but not built"
+        print("  limb-reorder scan: ON")
+    if getattr(cfg, 'spatial_ssi', False):
+        assert sb.ssi, "spatial_ssi=true but SSI not built"
+        print("  SSI state fusion: ON")
+    if getattr(cfg, 'temporal_motion', False):
+        assert getattr(model.blocks[0].temporal.ssm.fwd, 'motion_adaptive', False), \
+            "temporal_motion=true but MSM not built"
+        print("  MSM motion-adaptive Δ: ON")
+    if getattr(cfg, 'use_infill', False):
+        assert model.infill_head is not None, "use_infill=true but in-fill head not built"
+        print("  3D in-fill head: ON")
 
     # augmentation pipeline (CPU tensors, epoch mid-run so curriculum is active)
     p2, p3, c = (t.cpu() for t in synth_batch(cfg, 'cpu'))

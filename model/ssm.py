@@ -38,11 +38,20 @@ class ConfMamba(Mamba):
     overrides only the forward (non-fused slow path, which exposes Δ).
     """
 
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2, conf_gate=True, **kw):
+    def __init__(self, d_model, d_state=16, d_conv=4, expand=2, conf_gate=True,
+                 motion_adaptive=False, **kw):
         # force slow path — the fused kernel hides Δ and cannot be gated
         super().__init__(d_model, d_state=d_state, d_conv=d_conv, expand=expand,
                          use_fast_path=False, **kw)
         self.conf_gate = conf_gate
+        # MSM (SAMA-style motion-adaptive timescale): Δ is scaled by a gate driven
+        # by per-frame motion magnitude, so fast-moving joints update their state
+        # more. Init to near-identity (alpha=0 → gate≈sigmoid(beta)≈0.98) so it is a
+        # safe warm start and the model learns how much motion should matter.
+        self.motion_adaptive = motion_adaptive
+        if motion_adaptive:
+            self.msm_alpha = nn.Parameter(torch.tensor(0.0))
+            self.msm_beta = nn.Parameter(torch.tensor(4.0))
         if conf_gate:
             # gate = sigmoid(alpha * conf + beta), alpha>0 → high conf keeps Δ,
             # low conf shrinks Δ toward 0 (coast). Init: gate(conf=1)≈0.98 (≈vanilla
@@ -55,6 +64,14 @@ class ConfMamba(Mamba):
         """conf: (B, L, 1) in [0,1] → gate (B, 1, L) in (0,1)."""
         g = torch.sigmoid(self.conf_alpha * conf + self.conf_beta)   # (B, L, 1)
         return rearrange(g, "b l 1 -> b 1 l")
+
+    def _motion_gate(self, x):
+        """x: (B, d_inner, L) conv output → motion gate (B, 1, L) in (0,1).
+        Motion magnitude = mean over channels of |x_t - x_{t-1}| (0 at t=0)."""
+        diff = torch.zeros_like(x)
+        diff[..., 1:] = (x[..., 1:] - x[..., :-1]).abs()
+        m = diff.mean(dim=1, keepdim=True)                            # (B, 1, L)
+        return torch.sigmoid(self.msm_alpha * m + self.msm_beta)
 
     def forward(self, hidden_states, conf=None):
         """hidden_states: (B, L, D); conf: (B, L, 1) or None → (B, L, D)."""
@@ -88,18 +105,25 @@ class ConfMamba(Mamba):
         B = rearrange(B, "(b l) n -> b n l", l=seqlen).contiguous()
         C = rearrange(C, "(b l) n -> b n l", l=seqlen).contiguous()
 
-        if conf is not None and self.conf_gate:
-            # Δ = softplus(dt + bias) computed here, then gated by confidence so
-            # the kernel receives the final Δ directly (delta_softplus=False).
-            # The selective params (dt, B, C) are still derived from the observed
-            # (conv) signal, but the *integrated* input u and the D-skip are gated
-            # too — so when occluded (gate→0): Δ→0 (Ā=exp(ΔA)→I, state coasts) and
-            # u→0 (no noisy observation enters the state or the skip). The block
-            # then predicts from carried temporal memory.  Novelty (B).
-            g = self._gate(conf, seqlen).to(dt.dtype)         # (B, 1, L)
-            delta = (F.softplus(dt.float() + self.dt_proj.bias.float()[None, :, None])
-                     * g.float()).to(x.dtype)
-            u = (x * g).to(x.dtype)
+        use_conf = conf is not None and self.conf_gate
+        if use_conf or self.motion_adaptive:
+            # Compute Δ = softplus(dt + bias) here, then apply the confidence gate
+            # and/or the motion-adaptive gate, so the kernel receives the final Δ
+            # (delta_softplus=False). Confidence gate (novelty B): when occluded
+            # (g→0) Δ→0 (Ā=exp(ΔA)→I, state coasts) and the integrated input u→0 so
+            # no noisy observation enters. Motion gate (MSM): larger Δ for fast
+            # frames. The selective params (dt, B, C) still derive from the observed
+            # signal.
+            delta = F.softplus(dt.float() + self.dt_proj.bias.float()[None, :, None])
+            u = x
+            if use_conf:
+                g = self._gate(conf, seqlen).to(delta.dtype)  # (B, 1, L)
+                delta = delta * g
+                u = (x * g.to(x.dtype)).to(x.dtype)
+            if self.motion_adaptive:
+                gm = self._motion_gate(x).to(delta.dtype)     # (B, 1, L)
+                delta = delta * gm
+            delta = delta.to(x.dtype)
             y = selective_scan_fn(
                 u, delta, A, B, C, self.D.float(), z=z,
                 delta_bias=None, delta_softplus=False, return_last_state=False,
@@ -124,7 +148,7 @@ class BiSSM(nn.Module):
     """
 
     def __init__(self, d_model, d_state=16, d_conv=4, expand=2,
-                 conf_gate=True, dropout=0.0, fast=False):
+                 conf_gate=True, dropout=0.0, fast=False, motion_adaptive=False):
         super().__init__()
         self.conf_gate = conf_gate and not fast
         if fast:
@@ -133,8 +157,10 @@ class BiSSM(nn.Module):
             self.fwd = Mamba(d_model, d_state=d_state, d_conv=d_conv, expand=expand)
             self.bwd = Mamba(d_model, d_state=d_state, d_conv=d_conv, expand=expand)
         else:
-            self.fwd = ConfMamba(d_model, d_state, d_conv, expand, conf_gate=conf_gate)
-            self.bwd = ConfMamba(d_model, d_state, d_conv, expand, conf_gate=conf_gate)
+            self.fwd = ConfMamba(d_model, d_state, d_conv, expand, conf_gate=conf_gate,
+                                 motion_adaptive=motion_adaptive)
+            self.bwd = ConfMamba(d_model, d_state, d_conv, expand, conf_gate=conf_gate,
+                                 motion_adaptive=motion_adaptive)
         self.merge = nn.Linear(2 * d_model, d_model)
         self.drop = nn.Dropout(dropout)
 

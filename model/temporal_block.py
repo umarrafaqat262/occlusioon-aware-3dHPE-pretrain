@@ -26,11 +26,13 @@ from model.ssm import BiSSM
 
 class TemporalBlock(nn.Module):
     """V1 single-resolution temporal block (exact param-name compatibility)."""
-    def __init__(self, d_model, expand=2, dropout=0.1, d_state=16, d_conv=4):
+    def __init__(self, d_model, expand=2, dropout=0.1, d_state=16, d_conv=4,
+                 motion_adaptive=False):
         super().__init__()
         self.norm = nn.LayerNorm(d_model)
         self.ssm = BiSSM(d_model, d_state=d_state, d_conv=d_conv,
-                         expand=expand, conf_gate=True, dropout=dropout)
+                         expand=expand, conf_gate=True, dropout=dropout,
+                         motion_adaptive=motion_adaptive)
 
     def forward(self, x, conf=None):
         """x: (B*J, T, D), conf: (B*J, T, 1) or None → (B*J, T, D)."""

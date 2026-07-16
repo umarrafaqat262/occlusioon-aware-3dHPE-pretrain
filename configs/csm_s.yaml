@@ -1,0 +1,91 @@
+model_name: CSM-Pose_S
+
+# ── Confidence-aware Structure-Motion Mamba (the redesign) ───────────────────
+# Efficient deep-narrow Mamba (D=64) with the evidence-ranked modules from the
+# literature, sized to target < 1M params. Clean-first config (light occlusion aug
+# as a regularizer). Verify the param count with smoke_test.py and trim num_blocks
+# if it exceeds 1M on the GPU box.
+
+# Skeleton
+num_joints: 17
+num_bones: 16
+num_frames: 243
+
+# Backbone — deep + narrow (SasMamba/PoseMamba recipe), expand=2 temporal SSM
+joint_embed_dim: 32
+bone_embed_dim: 32
+state_dim: 64
+num_heads: 4
+num_blocks: 6           # deeper than the old 4; trim to 5 if >1M
+ssm_expand: 2           # temporal SSM inner expansion (was 1 — a key fix)
+mlp_ratio: 2
+fk_hidden: 128
+dropout: 0.1
+d_state: 16
+
+# Decoder — light DAP (2 projection steps) so bone_len is still produced for losses
+decoder: dap
+dap_iter: 2
+dap_rho: 5.0
+dap_step: 0.05
+dap_w_floor: 0.1
+
+# ── NEW redesign modules (each ablatable via its flag) ───────────────────────
+use_dct: true            # DCT low-pass denoising front-end (parameter-free)
+dct_keep_ratio: 0.25
+spatial_kpa: true        # KTPFormer KPA ModulatedGCN prior
+spatial_lap_pe: 6        # Laplacian eigenvector PE (k=6, parameter-free vecs)
+spatial_limb_reorder: true   # PoseMamba additive global+limb-chain scan
+spatial_ssi: true        # confidence-weighted state fusion across joints (novel)
+spatial_conf_gate: true  # spatial occlusion coasting
+temporal_motion: true    # SAMA-style motion-adaptive Δ (MSM)
+use_infill: true         # 3D occlusion in-fill head (complete-in-3D)
+
+# Data
+dataset: vp3d
+data_dir: data/motion3d/cpn_vp3d
+keypoints_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
+train_stride: 81
+val_fraction: 0.05
+
+# Training
+batch_size: 32
+lr: 0.0005
+weight_decay: 0.01
+lr_sched: cosine
+lr_min_ratio: 0.01
+warmup_epochs: 5
+epochs: 120
+clip_grad: 1.0
+use_amp: true
+ema_decay: 0.999
+select_on_test: true
+
+# Loss — strong motion/velocity (SasMamba uses λ_m=20; we cut it to 2 before, restore)
+lambda_sym: 0.1
+lambda_vel: 20.0
+lambda_temp: 0.5
+lambda_blen: 2.0
+lambda_p0: 0.1
+
+# Augmentation — light occlusion (regularizer; clean-first)
+aug_joint_mask_min: 0.0
+aug_joint_mask_max: 0.1
+aug_edge_dropout: 0.05
+aug_edge_max_span: 20
+aug_structured_occ: false
+flip_prob: 0.5
+rotation_aug: true
+rotation_max_deg: 20
+jitter_aug: true
+jitter_scale: 0.05
+jitter_shift: 0.05
+jitter_noise: 0.01
+
+# Pretraining (MPM) — masked + light noise
+mpm_epochs: 25
+mpm_lr: 0.001
+mpm_mask_joint_ratio: 0.2
+mpm_mask_frame_ratio: 0.1
+mpm_noise_std: 0.01

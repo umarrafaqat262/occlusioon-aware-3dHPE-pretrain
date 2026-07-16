@@ -23,3 +23,15 @@ KIN_SCAN_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 # inverse permutation to restore canonical joint order after a reordered scan
 KIN_SCAN_INV = [KIN_SCAN_ORDER.index(j) for j in range(len(KIN_SCAN_ORDER))]
 
+# Undirected skeleton edges (child, parent) — used to build the graph adjacency
+# for the KPA graph conv, the SSI state-fusion adjacency, and the Laplacian PE.
+SKELETON_EDGES = [(j, p) for j, p in enumerate(H36M_PARENTS) if p >= 0]
+
+# Limb-chain gather index (PoseMamba global-local "reordering", verified from the
+# official code). Length 17; the root (0) and thorax (8) repeat as branch points.
+# A limb-ordered VIEW of the joints is produced by x[:, LIMB_REORDER_INDEX] and
+# fused additively with the natural (global) order before the spatial SSM scan, so
+# the recurrence traverses anatomically adjacent joints along each limb chain:
+#   right leg 0->1->2->3 | left leg 0->4->5->6 | left arm 8->11->12->13 | right arm 8->14->15->16
+LIMB_REORDER_INDEX = [0, 0, 1, 2, 3, 0, 4, 5, 6, 8, 11, 12, 13, 8, 14, 15, 16]
+

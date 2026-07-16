@@ -5,6 +5,7 @@ import torch.nn as nn
 from model.bone_ops import decompose_bones, reconstruct_fk
 from model.st_block import STBlock
 from model.ssm import BiSSM
+from model.dct import DCTDenoise
 from common.skeleton import BONE_CHILD_IDX, BONE_PARENT_IDX, H36M_PARENTS
 
 
@@ -249,6 +250,11 @@ class BoneStateMamba(nn.Module):
                 spatial_conf_gate = getattr(cfg, 'spatial_conf_gate', False),
                 spatial_gcn     = getattr(cfg, 'spatial_gcn', False),
                 gcn_hidden      = getattr(cfg, 'gcn_hidden', None),
+                spatial_kpa     = getattr(cfg, 'spatial_kpa', False),
+                spatial_lap_pe  = getattr(cfg, 'spatial_lap_pe', 0),
+                spatial_limb_reorder = getattr(cfg, 'spatial_limb_reorder', False),
+                spatial_ssi     = getattr(cfg, 'spatial_ssi', False),
+                temporal_motion = getattr(cfg, 'temporal_motion', False),
             )
             for _ in range(cfg.num_blocks)
         ])
@@ -265,6 +271,20 @@ class BoneStateMamba(nn.Module):
                 w_floor=getattr(cfg, 'dap_w_floor', 0.1),
             )
 
+        # ---- Optional front-end / heads (all default off → unchanged behaviour) ----
+        # DCT temporal denoising front-end (parameter-free) — attacks CPN 2D noise.
+        self.dct = (DCTDenoise(cfg.num_frames, getattr(cfg, 'dct_keep_ratio', 0.25))
+                    if getattr(cfg, 'use_dct', False) else None)
+        # 3D occlusion in-fill head: learned 3D correction on low-confidence joints
+        # (complete-in-3D, LInKs). Last layer zero-init → starts as a no-op.
+        if getattr(cfg, 'use_infill', False):
+            self.infill_head = nn.Sequential(
+                nn.LayerNorm(D), nn.Linear(D, D // 2), nn.GELU(), nn.Linear(D // 2, 3))
+            nn.init.zeros_(self.infill_head[-1].weight)
+            nn.init.zeros_(self.infill_head[-1].bias)
+        else:
+            self.infill_head = None
+
     # ------------------------------------------------------------------
     def encode(self, x_2d, conf=None):
         """Shared encoder (used by forward and by MPM pretraining).
@@ -275,6 +295,10 @@ class BoneStateMamba(nn.Module):
         #    (conf is kept low so the SSM still coasts on them).
         if conf is not None:
             x_2d = carry_forward_fill(x_2d, conf)
+
+        # 0b. DCT low-pass denoising of the (filled) 2D trajectory (optional)
+        if self.dct is not None:
+            x_2d = self.dct(x_2d)
 
         # 1. Velocity (finite difference; zero at t=0)
         vel = torch.zeros_like(x_2d)
@@ -308,4 +332,9 @@ class BoneStateMamba(nn.Module):
     def forward(self, x_2d, conf=None):
         """x_2d:(B,T,17,2), conf:(B,T,17,1) or None → joints, bone_dir, bone_len, P0."""
         h = self.encode(x_2d, conf)
-        return self.decoder(h, conf)
+        P, bone_dir, bone_len, P0 = self.decoder(h, conf)
+        if self.infill_head is not None and conf is not None:
+            # complete-in-3D: correction weighted by (1-conf) — confident joints
+            # untouched (conf=1 → 0), occluded joints get a learned 3D fill.
+            P = P + (1.0 - conf) * self.infill_head(h)
+        return P, bone_dir, bone_len, P0

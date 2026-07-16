@@ -26,17 +26,22 @@ class STBlock(nn.Module):
                  temporal_scales=(1,), temporal_fuse='gate', d_state_coarse=16,
                  coarse_conf_pool='avg', coarse_upsample='linear',
                  coarse_ssm=None, body_token=None,
-                 spatial_conf_gate=False, spatial_gcn=False, gcn_hidden=None):
+                 spatial_conf_gate=False, spatial_gcn=False, gcn_hidden=None,
+                 spatial_kpa=False, spatial_lap_pe=0, spatial_limb_reorder=False,
+                 spatial_ssi=False, temporal_motion=False):
         super().__init__()
         self.spatial = SpatialBlock(d_model, num_heads, mlp_ratio, dropout,
                                     d_state=d_state, scan_order=scan_order,
                                     conf_gate=spatial_conf_gate,
-                                    gcn=spatial_gcn, gcn_hidden=gcn_hidden)
+                                    gcn=spatial_gcn, gcn_hidden=gcn_hidden,
+                                    kpa=spatial_kpa, lap_pe=spatial_lap_pe,
+                                    limb_reorder=spatial_limb_reorder, ssi=spatial_ssi)
 
         scales = tuple(temporal_scales)
         if scales == (1,):
             # V1 path — preserves param names so a V1 checkpoint loads (sanity A/B).
-            self.temporal = TemporalBlock(d_model, expand, dropout, d_state=d_state)
+            self.temporal = TemporalBlock(d_model, expand, dropout, d_state=d_state,
+                                          motion_adaptive=temporal_motion)
         else:
             self.temporal = MultiScaleTemporalBlock(
                 d_model, expand=expand, dropout=dropout, d_state=d_state,
