@@ -6,6 +6,64 @@ CUDA kernels require an NVIDIA GPU; the model cannot run on CPU).
 
 ---
 
+## FOR THE GPU-SIDE AGENT (opencode) — READ THIS FIRST
+
+You are running on the GPU box. The editing/audit machine (CPU-only, no torch/GPU/data)
+fixed the code and wrote this guide; **you pull the code and run it here.** Here is the
+full picture so you act correctly.
+
+### Why this work exists (the problem)
+The project is an **occlusion-aware, <1M-param, Mamba** 2D→3D pose lifter (Human3.6M, CPN,
+243f), for a paper. The prior best was **48.2 mm test MPJPE**, ~7–10 mm behind the <1M
+SOTA cluster (SasMamba 41.5, PoseMamba-S 41.8) at the **same** param budget — so the gap
+was architecture + training recipe + **bugs**, not capacity. An audit found real bugs and
+missing pieces; they have now been fixed on the CPU box and pushed.
+
+### What was wrong and what got fixed (already in the code you pull)
+- **occlusion_eval.py / demo.py crashed** (`pred,_,_` vs a 4-tuple) → fixed. The occlusion
+  study and demo now run.
+- **Eval double-counted tail frames** (`cover_tail` overlap) → fixed with a frame-dedup mask.
+- **Training loss wasn't root-aligned** while eval was → fixed (matches the metric now).
+- **Confidence-gate init** was 0.95/0.12 → now ≈1 at conf=1, ≈0 at conf=0.
+- **Spatial confidence gate was dead code** (occluded joints leaked into neighbours) → now
+  toggled by `spatial_conf_gate`.
+- **Selection is on the TEST set** under `select_on_test` (H36M best-on-test convention) —
+  now honestly documented + logged; disclose it in the paper.
+- **New capabilities** added, all config-gated: local-joint **GCN branch** (`spatial_gcn`),
+  **structured limb occlusion** aug (`aug_structured_occ`), **masked+noise MPM**
+  (`mpm_noise_std`), real-confidence loader support. Three new configs: `anatproj_clean`,
+  `anatproj_gcn`, `anatproj_occ`.
+
+### YOUR RULES (do this, avoid that)
+1. **`git pull` before each run** and **do not modify the model/training code** — run it as
+   pushed. If you believe something needs changing, write the reason in RESULTS.md and flag
+   it; don't silently diverge (the CPU box reviews your commits).
+2. **Report the RIGHT metric.** The progress-bar `mpjpe=...` is a **TRAINING-batch** number
+   and is optimistic (~16 mm train/test gap here). The real, comparable numbers are:
+   - the **`VAL (EMA) MPJPE`** line the trainer logs **every 5 epochs**, and
+   - the final **`evaluate.py`** output (flip-TTA + frame-dedup) after training completes.
+   Put THOSE in RESULTS.md. Never present a training MPJPE as if it were the test result,
+   and never claim the 48.2 mm baseline (a test number) is beaten from a training number.
+3. **Don't fabricate.** Only write file names, numbers, and results you actually observe.
+   (A previous SETUP.md invented model files that don't exist — corrected. Don't repeat.)
+4. **Pin versions** you actually used in SETUP.md (exact torch / mamba-ssm / causal-conv1d);
+   avoid nightly builds if a stable one works — the paper needs reproducibility.
+5. **Push what's verifiable:** commit the concise epoch log (the `VAL (EMA)` lines) and, if
+   size allows, the best checkpoint — prose alone can't be reproduced.
+6. **Run `smoke_test.py` first** (§2b) and only start a long run if it prints PASS.
+
+### YOUR TASK QUEUE (in order)
+1. Finish the `anatproj_clean` run (§3a) → run `evaluate.py` → record VAL(EMA)+eval test MPJPE.
+2. `anatproj_gcn` (§3b) — chase the <1M cluster (~38–42 mm test).
+3. `anatproj_occ` (§3c) — the occlusion-aware model; then the occlusion studies
+   (`evaluate.py --occlusion` and `scripts/occlusion_eval.py`) and the conf-off ablation.
+4. GT-2D sanity gate (§3d) — a healthy lifter hits ~15–17 mm on GT 2D; if not, tell the
+   CPU box (backbone bottleneck).
+5. Real occlusion benchmarks (§6) — flag if datasets aren't available.
+Report results per stage in RESULTS.md, then `git push`.
+
+---
+
 ## 0. What changed (audit fixes applied)
 
 **Correctness bugs fixed**
