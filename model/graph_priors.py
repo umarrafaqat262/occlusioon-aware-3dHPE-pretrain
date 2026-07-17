@@ -62,7 +62,9 @@ class KPAGraphConv(nn.Module):
         self.W_self = nn.Linear(d_model, d_model, bias=False)
         self.W_neigh = nn.Linear(d_model, d_model, bias=False)
         self.M = nn.Parameter(torch.ones(num_joints, d_model))               # per-joint modulation
-        self.bn = nn.BatchNorm1d(num_joints)
+        # LayerNorm (not BatchNorm) — running-stat BN is unstable in a residual
+        # Mamba stack under bf16; LN over the feature dim is the safe choice here.
+        self.norm = nn.LayerNorm(d_model)
         self.act = nn.GELU()
 
     def forward(self, x):
@@ -76,5 +78,5 @@ class KPAGraphConv(nn.Module):
         M = self.M.to(x.dtype)
         out = torch.einsum('ij,njd->nid', adj * eye, M * h0) \
             + torch.einsum('ij,njd->nid', adj * (1.0 - eye), M * h1)
-        out = self.bn(out)                                     # BN over the J dim
+        out = self.norm(out)                                   # LayerNorm over feature dim
         return self.act(out)

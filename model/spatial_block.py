@@ -109,17 +109,22 @@ class SpatialBlock(nn.Module):
 
         parent_feat = self.parent_proj(h[:, self.parent_idx])
 
-        # limb-chain additive view (global + local) before the scan
-        h_scan = h + h[:, self.limb_idx] if self.limb_reorder else h
+        # limb-chain view (global + local) before the scan — AVERAGE (not sum) to
+        # preserve activation scale into the SSM (summing ~2x'd it → instability).
+        h_scan = 0.5 * (h + h[:, self.limb_idx]) if self.limb_reorder else h
         hs = h_scan[:, self.order]
         cs = conf[:, self.order] if conf is not None else None
         hs = self.ssm(hs, cs)
         hs = hs[:, self.inv]
 
-        # confidence-weighted state fusion across joints (SSI, novel)
+        # confidence-weighted state fusion across joints (SSI, novel).
+        # softmax-normalize the adjacency rows → the message is a convex combination
+        # of neighbour states, so its magnitude is bounded regardless of the learned
+        # adjacency values (prevents the divergence seen with a free Parameter).
         if self.ssi:
             cw = conf if conf is not None else hs.new_ones(hs.shape[0], hs.shape[1], 1)
-            msg = torch.einsum('ak,nkd->nad', self.ssi_adj.to(hs.dtype), cw.to(hs.dtype) * hs)
+            A = torch.softmax(self.ssi_adj.to(hs.dtype), dim=-1)          # (J,J) row-stochastic
+            msg = torch.einsum('ak,nkd->nad', A, cw.to(hs.dtype) * hs)
             hs = hs + torch.tanh(self.ssi_gate) * msg
 
         x = x + hs + parent_feat

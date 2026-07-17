@@ -214,6 +214,10 @@ def main():
     import math
     lr_sched = getattr(cfg, 'lr_sched', 'cosine')
     eta = getattr(cfg, 'lr_min_ratio', 0.01)
+    # divergence guard: skip non-finite / exploding steps; abort if it persists
+    run_mean_loss = None
+    bad_steps = 0
+    diverged = False
     for epoch in range(start_epoch, cfg.epochs):
         # LR: linear warmup, then cosine-to-floor (default) or exponential decay.
         if epoch < warmup:
@@ -235,12 +239,29 @@ def main():
             with torch.autocast(device_type='cuda', dtype=torch.bfloat16, enabled=use_amp):
                 pred_3d, bone_dir, bone_len, pred_p0 = model(pose_2d, conf)
                 loss, metrics = criterion(pred_3d, pose_3d, bone_len, pose_2d, pred_p0)
+            # divergence guard — skip non-finite or exploding (>20x running mean) steps
+            lv = loss.item()
+            exploding = (run_mean_loss is not None) and (lv > 20.0 * run_mean_loss)
+            if (not math.isfinite(lv)) or exploding:
+                bad_steps += 1
+                optimizer.zero_grad(set_to_none=True)
+                if bad_steps >= 50:
+                    log.info(f"[DIVERGENCE] loss={lv:.4g} (run_mean={run_mean_loss}) for "
+                             f"{bad_steps} steps at epoch {epoch+1} — aborting training. "
+                             f"Lower lr / check module stability.")
+                    diverged = True
+                    break
+                continue
+            bad_steps = 0
+            run_mean_loss = lv if run_mean_loss is None else 0.99 * run_mean_loss + 0.01 * lv
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.clip_grad)
             optimizer.step(); ema.update(model)
             epoch_loss += metrics['total']
             pbar.set_postfix(loss=f"{metrics['total']:.4f}", mpjpe=f"{metrics['mpjpe']*1000:.1f}")
 
+        if diverged:
+            break
         avg_loss = epoch_loss / len(train_loader)
         writer.add_scalar('train/loss', avg_loss, epoch); writer.add_scalar('train/lr', lr, epoch)
         for k, v in metrics.items(): writer.add_scalar(f'train/{k}', v, epoch)

@@ -49,15 +49,16 @@ dt_file: data_2d_h36m_cpn_ft_h36m_dbb.npz
 train_stride: 81
 val_fraction: 0.05
 
-# Training
+# Training — stabilized after the 5e-4 divergence (exploded at ep16). Lower LR,
+# longer warmup, tighter grad clip.
 batch_size: 32
-lr: 0.0005
+lr: 0.0002
 weight_decay: 0.01
 lr_sched: cosine
 lr_min_ratio: 0.01
-warmup_epochs: 5
+warmup_epochs: 10
 epochs: 120
-clip_grad: 1.0
+clip_grad: 0.5
 use_amp: true
 ema_decay: 0.999
 select_on_test: true

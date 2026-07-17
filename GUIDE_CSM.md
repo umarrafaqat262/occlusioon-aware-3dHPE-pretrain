@@ -1,7 +1,23 @@
 # CSM-Pose Redesign — Build & Run Guide (for the GPU agent)
 
-**Branch:** `csm-pose-redesign` (this work is off `main` so the running `anatproj_clean`
-job is undisturbed). Pull this branch on the GPU box to build/train the new model.
+**Branch:** `csm-pose-redesign`. Pull this branch on the GPU box to build/train the new model.
+
+## ⚠️ READ FIRST — the all-modules run diverged; do this instead
+The first attempt (`csm_s.yaml` with lr 5e-4 and all 8 modules on) **diverged** — loss exploded
+at epoch 16, VAL MPJPE hit 1.7–5.7 METERS, best was only 63.4 mm at epoch 5. Root cause:
+lr too high for the deeper/module-rich net + several unbounded modules, all enabled at once.
+
+**Now fixed in this branch:** lr 2e-4 / warmup 10 / clip 0.5; SSI adjacency softmax-bounded;
+KPA uses LayerNorm (not BatchNorm); limb-reorder averages (not sums); and `train.py` has a
+**divergence guard** that aborts automatically if the loss explodes (so no more 100-epoch waste).
+
+**Mandatory procedure — do NOT enable all modules at once again:**
+1. Run **`configs/csm_base.yaml` first** (backbone only, all new flags OFF). It MUST train stably —
+   target ~44–48 mm test. If even the base diverges, lower lr further (1e-4) and report.
+2. Then enable **ONE module at a time** (copy csm_base.yaml, flip one flag), ~25-epoch runs, in the
+   order in Step 3 below. Keep a module only if it is stable AND lowers TEST MPJPE (or helps occlusion).
+3. Assemble the final config from the survivors. `csm_s.yaml` (all modules) is the *end goal*, not
+   the starting point — only run it once the ablation shows the modules are individually stable.
 
 ## Why this redesign
 The old `AnatomyProj-Mamba` (0.97M) plateaued at **~51 mm test** and overfit — an architecture

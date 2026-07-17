@@ -23,6 +23,7 @@ from train import augment
 CONFIGS = ['configs/anatproj_clean.yaml',
            'configs/anatproj_gcn.yaml',
            'configs/anatproj_occ.yaml',
+           'configs/csm_base.yaml',
            'configs/csm_s.yaml']
 PARAM_BUDGET = 1_000_000
 B = 2
