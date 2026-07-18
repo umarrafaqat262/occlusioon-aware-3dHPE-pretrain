@@ -18,7 +18,8 @@ Measure the accuracy ceiling of two architectures in the **< 1M parameter** clus
 | PoseMamba-L (ref, >1M) | 6.7M | 38.1 | 32.5 |
 | **AnatomyProj-Mamba (prev)** | **0.97M** | **48.2** | 37.9 |
 | **AnatomyProj-Mamba CLEAN** | **0.97M** | **51.06** (best) | — |
-| **CSM-Pose_S** | **0.908M** | **TBD** | — |
+| **CSM-Pose_S** | **0.908M** | **63.36** (VAL, diverged) | — |
+| **CSM-Pose_BASE** | **0.843M** | **83.63** (VAL, diverged) | — |
 
 ---
 
@@ -89,7 +90,7 @@ Measure the accuracy ceiling of two architectures in the **< 1M parameter** clus
 
 **Checkpoint**: `pretrained_csm_pose_s.pth` (4.07 MB)
 
-### 3.2 Supervised Fine-tune (in progress — DIVERGED at epoch 40/120)
+### 3.2 Supervised Fine-tune (killed at epoch 78/120 — diverged)
 
 Training started from MPM-pretrained checkpoint. Loss exploded at epoch 16 onward.
 
@@ -103,19 +104,62 @@ Training started from MPM-pretrained checkpoint. Loss exploded at epoch 16 onwar
 | 30 | 35.7866 | 5669.28mm | — |
 | 35 | 32.6480 | 2590.63mm | — |
 | 40 | 32.0617 | 2590.63mm | — |
+| 50 | 39.5473 | 3245.47mm | — |
+| 60 | 30.4012 | 3395.18mm | — |
+| 70 | 27.4252 | 2635.79mm | — |
+| 77 | 19.2890 | 2319.99mm | — |
 
 **Best VAL(EMA) MPJPE: 63.36mm** at epoch 5 (checkpoint: `best_csm_s.pth`).
 
-**Training instability**: Loss collapsed at epoch 16 (0.23 → 0.99 → 2.35 → ... → 117 at epoch 32). The model achieved its best validation at epoch 5 and then diverged. Possible causes:
-- Learning rate (0.0005) too aggressive for the new CSM-Pose modules
-- Numerical instability in SSI, MSM, or spatial conf gate
-- MPM pretrain mismatch with fine-tune objective
-
-Training is still running (epoch 41/120) but unlikely to recover.
+**Training instability**: Loss collapsed at epoch 16 (0.23 → 0.99 → 2.35 → ... → 117 at epoch 32). The model achieved its best validation at epoch 5 and then diverged. Killed at epoch 78.
 
 ---
 
-## 4. Checkpoints produced
+## 4. Run C: CSM-Pose_BASE (`csm_base.yaml`)
+
+**Config**: backbone-only baseline (843K params), all 8 new modules OFF. Same efficient backbone (D=64, 6 blocks, expand=2) with stabilized hyperparams (lr 2e-4, warmup 10, clip 0.5).
+
+### 4.1 MPM Pretrain
+
+| Epoch | Avg Loss | LR |
+|---|---|---|
+| 1 | 0.00494 | 0.00100 |
+| 5 | 0.00100 | 0.00091 |
+| 10 | 0.00076 | 0.00066 |
+| 15 | 0.00063 | 0.00035 |
+| 20 | 0.00054 | 0.00010 |
+| **25** | **0.00050** | 0.000000 |
+
+**Checkpoint**: `pretrained_csm_pose_base.pth` (4.07 MB)
+
+### 4.2 Supervised Fine-tune (killed at epoch 50/120 — diverged even backbone-only)
+
+Even the backbone-only config (all modules OFF) diverged at lr=2e-4 — loss climbed from 0.28 to 6.27.
+
+| Epoch | Train Loss | VAL(EMA) MPJPE | Best |
+|---|---|---|---|
+| 5 | 0.2814 | 231.82mm | — |
+| 10 | 0.3426 | 157.85mm | — |
+| **15** | 0.5129 | **83.63mm** | ✓ **BEST** |
+| 20 | 0.8799 | 179.17mm | — |
+| 25 | 2.6338 | 151.89mm | — |
+| 30 | 2.7093 | 148.25mm | — |
+| 35 | 1.8355 | 92.29mm | — |
+| 40 | 0.9553 | 203.56mm | — |
+| 45 | 4.2388 | — | — |
+| 50 | 6.2667 | 390.89mm | — |
+
+**Best VAL(EMA) MPJPE: 83.63mm** at epoch 15 (checkpoint: `best_csm_pose_base.pth`).
+
+**Training instability**: Even backbone-only diverged — same pattern as all-modules run but slower. Loss 0.28 → 0.88 → 3.14 → 6.27. This indicates a **fundamental training stability issue** with the new architecture (not module-specific): the deep-narrow backbone (D=64, 6 blocks, expand=2) with light DAP decoder is inherently unstable at lr=2e-4. Possible root causes:
+- Weight initialization incompatible with deep Mamba stacking (6 blocks, expand=2)
+- Light DAP decoder (2 iters) producing large gradient swings
+- Gradient clip (0.5) too tight or too loose
+- Cosine LR schedule with warmup causing late-stage divergence
+
+---
+
+## 5. Checkpoints produced
 
 | File | Size | Description |
 |---|---|---|
@@ -130,10 +174,12 @@ Training is still running (epoch 41/120) but unlikely to recover.
 | `pretrained_kinfk_mamba_cpn_tiny_mpm.pth` | 1.86 MB | MPM-pretrained KinFK Tiny |
 | `pretrained_csm_pose_s.pth` | 4.07 MB | MPM-pretrained CSM-Pose_S (25 epochs, loss 0.00050) |
 | `best_csm_s.pth` | 15.0 MB | Best CSM-Pose_S (epoch 5, 63.36mm VAL MPJPE) |
+| `pretrained_csm_pose_base.pth` | 4.07 MB | MPM-pretrained CSM-Pose_BASE (25 epochs, loss 0.00050) |
+| `best_csm_pose_base.pth` | 15.0 MB | Best CSM-Pose_BASE (epoch 15, 83.63mm VAL MPJPE) |
 
 ---
 
-## 5. SOTA Context
+## 6. SOTA Context
 
 All models evaluated on **Human3.6M CPN 243f** (Protocol #1, mm):
 
@@ -151,7 +197,8 @@ All models evaluated on **Human3.6M CPN 243f** (Protocol #1, mm):
 | **AnatomyProj-Mamba (prev, TEST)** | 0.97M | **48.2** | 37.9 | repo baseline |
 | **AnatomyProj-Mamba CLEAN (this run)** | 0.97M | **51.06** (best) | — | this run |
 | **CSM-Pose_S (this run)** | 0.908M | **63.36** (VAL, diverged) | — | this run |
+| **CSM-Pose_BASE (this run)** | 0.843M | **83.63** (VAL, diverged) | — | this run |
 
 ---
 
-*Last updated: 2026-07-17 11:00 UTC*
+*Last updated: 2026-07-18 05:00 UTC*
