@@ -217,6 +217,7 @@ def main():
     # divergence guard: skip non-finite / exploding steps; abort if it persists
     run_mean_loss = None
     bad_steps = 0
+    val_bad = 0
     diverged = False
     for epoch in range(start_epoch, cfg.epochs):
         # LR: linear warmup, then cosine-to-floor (default) or exponential decay.
@@ -275,6 +276,16 @@ def main():
             val_mm = evaluate(ema_model, val_loader, device)
             writer.add_scalar('val/mpjpe_mm', val_mm, epoch)
             log.info(f"  VAL (EMA)  MPJPE = {val_mm:.2f} mm   (best {best_val:.2f})")
+            # VAL-based divergence abort (catches gradual climbs the per-step guard misses)
+            if best_val != float('inf') and val_mm > 2.0 * best_val:
+                val_bad += 1
+                log.info(f"  [DIVERGENCE] VAL {val_mm:.1f}mm > 2x best {best_val:.1f}mm "
+                         f"({val_bad} consecutive check(s))")
+                if val_bad >= 2:
+                    log.info("  [DIVERGENCE] validation diverged — aborting training.")
+                    diverged = True
+            else:
+                val_bad = 0
             if use_wandb:
                 wandb.log({'val/mpjpe_mm': val_mm, 'val/best_mm': min(val_mm, best_val)}, step=epoch)
             if val_mm < best_val:
@@ -285,6 +296,8 @@ def main():
                            f'checkpoints/best_{run_tag}.pth')
                 log.info(f"  NEW BEST -> checkpoints/best_{run_tag}.pth")
             del ema_model
+            if diverged:
+                break
 
     # final-epoch checkpoint (transparency: report final + best, not only best-on-test)
     torch.save({'epoch': cfg.epochs - 1, 'model': model.state_dict(),

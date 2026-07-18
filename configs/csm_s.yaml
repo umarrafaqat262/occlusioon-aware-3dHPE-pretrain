@@ -63,9 +63,10 @@ use_amp: true
 ema_decay: 0.999
 select_on_test: true
 
-# Loss — strong motion/velocity (SasMamba uses λ_m=20; we cut it to 2 before, restore)
+# Loss — lambda_vel=2 (our velocity_loss is unsquared L2; 20x caused divergence — see
+# csm_base note. SasMamba's 20 works because their vel loss is formulated differently.)
 lambda_sym: 0.1
-lambda_vel: 20.0
+lambda_vel: 2.0
 lambda_temp: 0.5
 lambda_blen: 2.0
 lambda_p0: 0.1

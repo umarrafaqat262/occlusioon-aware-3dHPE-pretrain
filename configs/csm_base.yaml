@@ -24,9 +24,9 @@ fk_hidden: 128
 dropout: 0.1
 d_state: 16
 
-# Decoder — light DAP
+# Decoder — DAP (8 iters, the proven-stable count; more temporal/anatomical smoothing)
 decoder: dap
-dap_iter: 2
+dap_iter: 8
 dap_rho: 5.0
 dap_step: 0.05
 dap_w_floor: 0.1
@@ -62,9 +62,11 @@ use_amp: true
 ema_decay: 0.999
 select_on_test: true
 
-# Loss — strong motion/velocity
+# Loss — lambda_vel=2 (NOT 20: our velocity_loss is an unsquared L2 norm with a
+# non-vanishing, position-degenerate gradient; 20x made AdamW limit-cycle and the
+# position drift → gradual divergence. 2.0 is the proven-stable value.)
 lambda_sym: 0.1
-lambda_vel: 20.0
+lambda_vel: 2.0
 lambda_temp: 0.5
 lambda_blen: 2.0
 lambda_p0: 0.1

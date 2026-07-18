@@ -7,9 +7,15 @@ The first attempt (`csm_s.yaml` with lr 5e-4 and all 8 modules on) **diverged** 
 at epoch 16, VAL MPJPE hit 1.7–5.7 METERS, best was only 63.4 mm at epoch 5. Root cause:
 lr too high for the deeper/module-rich net + several unbounded modules, all enabled at once.
 
-**Now fixed in this branch:** lr 2e-4 / warmup 10 / clip 0.5; SSI adjacency softmax-bounded;
-KPA uses LayerNorm (not BatchNorm); limb-reorder averages (not sums); and `train.py` has a
-**divergence guard** that aborts automatically if the loss explodes (so no more 100-epoch waste).
+**ROOT CAUSE (confirmed by two independent audits):** the divergence was caused by
+**`lambda_vel: 20`**, not the architecture. Proof: the identical backbone trained perfectly
+stably during MPM pretrain at lr=1e-3 (5× higher) — MPM just doesn't use the velocity loss.
+Our `velocity_loss` is an *unsquared* L2 norm (non-vanishing gradient, blind to absolute
+position), so at 20× it makes AdamW limit-cycle and the position drift → gradual runaway.
+**Now fixed: `lambda_vel: 2.0`** in both configs (the proven-stable value; csm_base also uses
+`dap_iter: 8`). Also kept as defensive measures: lr 2e-4 / warmup 10 / clip 0.5, softmax-bounded
+SSI, LayerNorm KPA, averaged limb-reorder, and a `train.py` **divergence guard** (per-step +
+VAL-based) that now aborts automatically — including gradual climbs.
 
 **Mandatory procedure — do NOT enable all modules at once again:**
 1. Run **`configs/csm_base.yaml` first** (backbone only, all new flags OFF). It MUST train stably —
